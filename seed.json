@@ -1,0 +1,761 @@
+{
+ "meta": {
+  "dates": {
+   "events": [
+    {
+     "date": "2026-11-02",
+     "id": "e1",
+     "label": "",
+     "name": "Prep sessions"
+    },
+    {
+     "date": "2026-11-09",
+     "id": "e2",
+     "label": "",
+     "name": "Kickoff"
+    },
+    {
+     "date": null,
+     "id": "e3",
+     "label": "Jan 2027",
+     "name": "Report due"
+    },
+    {
+     "date": null,
+     "id": "e4",
+     "label": "Feb 2027",
+     "name": "Türkiye final"
+    }
+   ],
+   "updated": 1792335600000
+  },
+  "links": {
+   "folder": "",
+   "updated": 1792335700000
+  },
+  "team": {
+   "members": [
+    {
+     "color": "#d7193f",
+     "id": "m1",
+     "name": "Selin",
+     "role": ""
+    },
+    {
+     "color": "#e3b5bc",
+     "id": "m2",
+     "name": "Layana",
+     "role": ""
+    },
+    {
+     "color": "#1e5631",
+     "id": "m3",
+     "name": "Tamer",
+     "role": ""
+    },
+    {
+     "color": "#a7c7e7",
+     "id": "m4",
+     "name": "Bahar",
+     "role": ""
+    },
+    {
+     "color": "#4caf50",
+     "id": "m5",
+     "name": "Ahmet Mete",
+     "role": ""
+    }
+   ],
+   "updated": 1792336100000
+  }
+ },
+ "notes": {
+  "a01": {
+   "author": "m1",
+   "body": "Tool: Claude. Used for: the structure of the Research Map (rubric, sources, data packs per role). Checked: rubric points against the official CFA Institute rules. Contains no Borusan numbers.",
+   "created": 1792249400201,
+   "date": "2026-10-17",
+   "kind": "ai",
+   "link": "",
+   "title": "Claude drafted the Borusan Research Map structure"
+  },
+  "a03": {
+   "author": "m1",
+   "body": "Tool: Claude. Used for: building the app, collecting links to Borusan's primary documents, and the margin table from the guidance page. Checked: every link opens the company's own investor relations site; the margin table was copied from the guidance page on 18 Oct 2026.",
+   "created": 1792335700301,
+   "date": "2026-10-18",
+   "kind": "ai",
+   "link": "https://borusanpipe.com/investor-relations",
+   "title": "Claude built this team app and found the Borusan document links"
+  },
+  "q01": {
+   "author": "m1",
+   "body": "Practice question: judges always ask this. In a DCF it is usually long-term growth and the discount rate.",
+   "created": 1792249400101,
+   "date": "2026-10-17",
+   "kind": "question",
+   "link": "",
+   "star": false,
+   "title": "Which assumption matters most in your valuation, and how sensitive is your price to it?"
+  },
+  "q02": {
+   "author": "m1",
+   "body": "Practice question for the judges (Damodaran Session 5).",
+   "created": 1792249400102,
+   "date": "2026-10-17",
+   "kind": "question",
+   "link": "",
+   "star": false,
+   "title": "Why did you use a bottom-up beta instead of a regression beta?"
+  },
+  "q06": {
+   "author": "",
+   "body": "For the Global CFO. Example question drafted with Claude; replace with our own.",
+   "created": 1792249400106,
+   "date": "2026-10-17",
+   "kind": "question",
+   "link": "",
+   "star": false,
+   "title": "How do you plan to split capital spending between your US and Türkiye operations over the next five years?"
+  },
+  "q07": {
+   "author": "",
+   "body": "For the Global CEO. Example question drafted with Claude; replace with our own.",
+   "created": 1792249400107,
+   "date": "2026-10-17",
+   "kind": "question",
+   "link": "",
+   "star": false,
+   "title": "Which end markets do you expect to drive US volume growth over the next three years?"
+  },
+  "q08": {
+   "author": "",
+   "body": "For Investor Relations. Example question drafted with Claude; replace with our own.",
+   "created": 1792249400108,
+   "date": "2026-10-17",
+   "kind": "question",
+   "link": "",
+   "star": false,
+   "title": "Which KPIs should investors follow each quarter to understand the business?"
+  }
+ },
+ "sprints": {
+  "s1": {
+   "end": "2026-10-25",
+   "goal": "Collect our first data packs, every number with a source.",
+   "name": "Sprint 1",
+   "start": "2026-10-19"
+  },
+  "s2": {
+   "end": "2026-11-01",
+   "goal": "Close our knowledge gaps before the prep sessions.",
+   "name": "Sprint 2",
+   "start": "2026-10-26"
+  },
+  "s3": {
+   "end": "2026-11-08",
+   "goal": "Learn from the prep sessions and pick our best kickoff questions.",
+   "name": "Sprint 3",
+   "start": "2026-11-02"
+  },
+  "s4": {
+   "end": "2026-11-15",
+   "goal": "Turn kickoff answers into our first assumptions.",
+   "name": "Sprint 4",
+   "start": "2026-11-09"
+  }
+ },
+ "tasks": {
+  "p11": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792336000011,
+   "due": "2026-10-22",
+   "phase": "1.1",
+   "role": "",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "How a pipe maker earns: the spread between pipe price and steel coil cost"
+    },
+    {
+     "d": false,
+     "t": "Who buys pipes: energy, infrastructure, construction, automotive"
+    },
+    {
+     "d": false,
+     "t": "Past shocks: 2008 crisis, 2015 oil crash, 2018 US steel tariffs, 2020 COVID. What happened to steel companies?"
+    },
+    {
+     "d": false,
+     "t": "Sector benchmark: Damodaran margins by sector (Steel)"
+    },
+    {
+     "d": false,
+     "t": "Who competes with Borusan (Tenaris and others)"
+    },
+    {
+     "d": false,
+     "t": "Each of us: one insight in Notes with its source"
+    }
+   ],
+   "title": "1.1 Steel sector: how it works and what crises do to it"
+  },
+  "p12": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792336000012,
+   "due": "2026-10-25",
+   "phase": "1.2",
+   "role": "",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "2Q 2026 investor presentation: the story in 3 sentences"
+    },
+    {
+     "d": false,
+     "t": "2025 Annual Report: segments, plants, countries"
+    },
+    {
+     "d": false,
+     "t": "Share of revenue from the US"
+    },
+    {
+     "d": false,
+     "t": "Latest news on KAP and the IR site: orders, rating, calendar"
+    },
+    {
+     "d": false,
+     "t": "Guidance: what management promises for 2026"
+    }
+   ],
+   "title": "1.2 Borusan and the news: what it sells, where revenue comes from"
+  },
+  "p13": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792336000013,
+   "due": "2026-10-29",
+   "phase": "1.3",
+   "role": "",
+   "sprint": "s2",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Revenue, EBITDA and margin 2021-2025 next to the guidance table"
+    },
+    {
+     "d": false,
+     "t": "Why the margin fell from 2023 to 2024"
+    },
+    {
+     "d": false,
+     "t": "Debt and cash flow"
+    },
+    {
+     "d": false,
+     "t": "Compare our margins with the sector benchmark"
+    }
+   ],
+   "title": "1.3 Financial reports: do the numbers confirm the story?"
+  },
+  "p14": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792336000014,
+   "due": "2026-11-01",
+   "phase": "1.4",
+   "role": "",
+   "sprint": "s2",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Find one-off items: asset sales, provisions, currency gains"
+    },
+    {
+     "d": false,
+     "t": "Cash from operations versus net profit: do they move together?"
+    },
+    {
+     "d": false,
+     "t": "Working capital swings: inventory, receivables"
+    },
+    {
+     "d": false,
+     "t": "Accounting notes: reporting currency and inflation accounting"
+    },
+    {
+     "d": false,
+     "t": "Our clean EBITDA for each year"
+    }
+   ],
+   "title": "1.4 Quality of earnings: is the profit real?"
+  },
+  "t01": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600001,
+   "due": "2026-10-18",
+   "role": "",
+   "sprint": "s1",
+   "status": "doing",
+   "steps": [
+    {
+     "d": false,
+     "t": "Open the Map: the CFA way and our way"
+    },
+    {
+     "d": false,
+     "t": "Agree names and roles (Team, Edit names and roles)"
+    },
+    {
+     "d": false,
+     "t": "Everyone picks at least one Sprint 1 task"
+    },
+    {
+     "d": false,
+     "t": "Pick our weekly meeting day"
+    },
+    {
+     "d": false,
+     "t": "Link the shared folder in Team"
+    }
+   ],
+   "title": "Team Zoom: agree roles and walk through the Map"
+  },
+  "t02": {
+   "assignees": [],
+   "created": 1792335600002,
+   "due": "2026-10-25",
+   "role": "val",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "US 10-year Treasury yield, with date"
+    },
+    {
+     "d": false,
+     "t": "Mature market equity risk premium (Damodaran, January update)"
+    },
+    {
+     "d": false,
+     "t": "Türkiye country risk premium (Damodaran)"
+    },
+    {
+     "d": false,
+     "t": "Steel industry unlevered beta (Damodaran, Betas by Sector)"
+    },
+    {
+     "d": false,
+     "t": "Borusan's debt from the latest balance sheet"
+    },
+    {
+     "d": false,
+     "t": "Market value: share price × shares outstanding"
+    },
+    {
+     "d": false,
+     "t": "Write every source in the assumption book"
+    }
+   ],
+   "title": "Discount rate inputs: risk-free rate, ERP, CRP, beta, debt"
+  },
+  "t03": {
+   "assignees": [
+    "m1"
+   ],
+   "created": 1792335600003,
+   "due": "2026-10-25",
+   "role": "",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Revenue and EBITDA history"
+    },
+    {
+     "d": false,
+     "t": "Past free cash flow to the firm"
+    },
+    {
+     "d": false,
+     "t": "Discount rate v0"
+    },
+    {
+     "d": false,
+     "t": "5-year forecast"
+    },
+    {
+     "d": false,
+     "t": "Terminal value"
+    },
+    {
+     "d": false,
+     "t": "Firm value to value per share"
+    },
+    {
+     "d": false,
+     "t": "Sensitivity table"
+    }
+   ],
+   "title": "Build my mini-DCF v0 in Excel (learning model)"
+  },
+  "t04": {
+   "assignees": [],
+   "created": 1792335600004,
+   "due": "2026-10-29",
+   "phase": "1.3",
+   "role": "fin",
+   "sprint": "s2",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Download the last five annual financial reports (Docs)"
+    },
+    {
+     "d": false,
+     "t": "Income statement in USD"
+    },
+    {
+     "d": false,
+     "t": "Balance sheet in USD"
+    },
+    {
+     "d": false,
+     "t": "Cash flow statement in USD"
+    },
+    {
+     "d": false,
+     "t": "Ratios: EBITDA margin, ROIC, net debt / EBITDA"
+    },
+    {
+     "d": false,
+     "t": "Compare with the company's guidance table"
+    }
+   ],
+   "title": "5 years of financial statements in USD + key ratios"
+  },
+  "t05": {
+   "assignees": [],
+   "created": 1792335600005,
+   "due": "2026-10-22",
+   "phase": "1.1",
+   "role": "ind",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "5 to 8 listed pipe peers, starting with Tenaris"
+    },
+    {
+     "d": false,
+     "t": "One line per peer: country, size, margin"
+    },
+    {
+     "d": false,
+     "t": "Demand chain: who buys pipes, and why"
+    },
+    {
+     "d": false,
+     "t": "US tariff news, each with date and source"
+    }
+   ],
+   "title": "Peer list, demand chain and tariff news"
+  },
+  "t06": {
+   "assignees": [],
+   "created": 1792335600006,
+   "due": "2026-10-25",
+   "phase": "1.2",
+   "role": "ind",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "The four segments, one sentence each"
+    },
+    {
+     "d": false,
+     "t": "Plants and countries"
+    },
+    {
+     "d": false,
+     "t": "Share of revenue from the US (annual report)"
+    },
+    {
+     "d": false,
+     "t": "Our three-sentence story"
+    }
+   ],
+   "title": "Business description: products, customers, countries"
+  },
+  "t07": {
+   "assignees": [],
+   "created": 1792335600007,
+   "due": "2026-10-25",
+   "phase": "1.2",
+   "role": "esg",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "TSRS 2025 report: the climate risks section"
+    },
+    {
+     "d": false,
+     "t": "Emissions trend over the years"
+    },
+    {
+     "d": false,
+     "t": "CBAM basics: what, when, who pays"
+    },
+    {
+     "d": false,
+     "t": "Which ESG items could change value?"
+    }
+   ],
+   "title": "Sustainability report summary + CBAM basics"
+  },
+  "t08": {
+   "assignees": [],
+   "created": 1792335600008,
+   "due": "2026-10-25",
+   "phase": "1.1",
+   "role": "esg",
+   "sprint": "s1",
+   "status": "doing",
+   "steps": [
+    {
+     "d": false,
+     "t": "List 10 risks"
+    },
+    {
+     "d": false,
+     "t": "Probability and impact for each"
+    },
+    {
+     "d": false,
+     "t": "Top 3: what does each do to value?"
+    }
+   ],
+   "title": "First list of risks"
+  },
+  "t09": {
+   "assignees": [],
+   "created": 1792335600009,
+   "due": "2026-10-25",
+   "role": "ed",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Create the shared folder"
+    },
+    {
+     "d": false,
+     "t": "Link it in Team"
+    },
+    {
+     "d": false,
+     "t": "Report template (Word)"
+    },
+    {
+     "d": false,
+     "t": "Slide template"
+    },
+    {
+     "d": false,
+     "t": "One-page Harvard citation guide"
+    }
+   ],
+   "title": "Shared folder, Harvard citations, report and slide templates"
+  },
+  "t10": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600010,
+   "due": "2026-10-25",
+   "role": "",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Write 2 questions in Notes as Kickoff question"
+    },
+    {
+     "d": false,
+     "t": "Say which report section each one answers"
+    }
+   ],
+   "title": "Bring 2 questions for Borusan's management"
+  },
+  "t11": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600011,
+   "due": "2026-10-22",
+   "role": "",
+   "sprint": "s1",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Read the Proven by winners part of the Map"
+    },
+    {
+     "d": false,
+     "t": "Write 5 takeaways in Notes"
+    }
+   ],
+   "title": "Read the Winners' Playbook, share 5 takeaways"
+  },
+  "t12": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600012,
+   "due": "2026-11-02",
+   "role": "",
+   "sprint": "s3",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "3 questions before each session"
+    },
+    {
+     "d": false,
+     "t": "Meeting note after each session"
+    }
+   ],
+   "title": "Prep sessions (Nov 2-5): bring 3 questions to each"
+  },
+  "t13": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600013,
+   "due": "2026-11-08",
+   "role": "",
+   "sprint": "s3",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Read the Q3 2026 results (out Nov 6)"
+    },
+    {
+     "d": false,
+     "t": "Shortlist questions in Notes"
+    },
+    {
+     "d": false,
+     "t": "Final 3, one for each speaker"
+    }
+   ],
+   "title": "Pick our top 3 kickoff questions (CEO, CFO, IR)"
+  },
+  "t14": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600014,
+   "due": "",
+   "role": "",
+   "sprint": "",
+   "status": "todo",
+   "steps": [],
+   "title": "Investment summary: rating, target price, 3 reasons (write last)"
+  },
+  "t15": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600015,
+   "due": "2026-11-01",
+   "role": "",
+   "sprint": "s2",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Prepare 3 minutes in English"
+    },
+    {
+     "d": false,
+     "t": "Present on Zoom"
+    },
+    {
+     "d": false,
+     "t": "Answer 2 questions from the team"
+    }
+   ],
+   "title": "3-minute teach-back of your own section"
+  },
+  "t16": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600016,
+   "due": "2026-10-28",
+   "role": "",
+   "sprint": "s2",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Rate each of the 7 report sections"
+    },
+    {
+     "d": false,
+     "t": "Pick 3 gaps to close this sprint"
+    }
+   ],
+   "title": "Gap check: know / half / don't know for each section"
+  },
+  "t17": {
+   "assignees": [
+    "all"
+   ],
+   "created": 1792335600017,
+   "due": "2026-11-13",
+   "role": "",
+   "sprint": "s4",
+   "status": "todo",
+   "steps": [
+    {
+     "d": false,
+     "t": "Everyone writes a meeting note on Nov 9"
+    },
+    {
+     "d": false,
+     "t": "Update the assumptions that changed"
+    }
+   ],
+   "title": "Kickoff notes into our assumption book"
+  }
+ }
+}
