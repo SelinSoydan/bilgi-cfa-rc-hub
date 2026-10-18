@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html{height:100%;overflow:hidden}body{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}</style><script>
+window.addEventListener("hashchange",function(){document.body.scrollTop=0;});
+var _st=window.scrollTo;window.scrollTo=function(x,y){try{document.body.scrollTop=y||0;}catch(e){}};
 (function(){
   var STORE = {}, colSubs = {}, docSubs = {}, queue = [], ready, readyP = new Promise(function(r){ ready = r; });
   function post(m){ m.isStreamlitMessage = true; window.parent.postMessage(m, "*"); }

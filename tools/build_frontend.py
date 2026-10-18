@@ -13,7 +13,9 @@ import io
 import os
 import sys
 
-BRIDGE = r"""<script>
+BRIDGE = r"""<style>html{height:100%;overflow:hidden}body{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}</style><script>
+window.addEventListener("hashchange",function(){document.body.scrollTop=0;});
+var _st=window.scrollTo;window.scrollTo=function(x,y){try{document.body.scrollTop=y||0;}catch(e){}};
 (function(){
   var STORE = {}, colSubs = {}, docSubs = {}, queue = [], ready, readyP = new Promise(function(r){ ready = r; });
   function post(m){ m.isStreamlitMessage = true; window.parent.postMessage(m, "*"); }
