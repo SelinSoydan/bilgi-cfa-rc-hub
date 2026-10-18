@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>
+(function(){
+  var STORE = {}, colSubs = {}, docSubs = {}, queue = [], ready, readyP = new Promise(function(r){ ready = r; });
+  function post(m){ m.isStreamlitMessage = true; window.parent.postMessage(m, "*"); }
+  function clone(x){ return JSON.parse(JSON.stringify(x)); }
+  function snap(col){ var m = STORE[col] || {}; return {docs: Object.keys(m).map(function(k){ var d = m[k]; return {id:k, exists:true, data:function(){ return d; }}; })}; }
+  function emit(col){
+    (colSubs[col] || []).forEach(function(cb){ try { cb(snap(col)); } catch(e){ console.error(e); } });
+    Object.keys(docSubs).forEach(function(p){ var a = p.split("/"); if (a[0] !== col) return; var d = (STORE[col] || {})[a[1]];
+      docSubs[p].forEach(function(cb){ try { cb({id:a[1], exists:!!d, data:function(){ return d; }}); } catch(e){ console.error(e); } }); });
+  }
+  function apply(o){
+    var m = STORE[o.col] = STORE[o.col] || {};
+    if (o.kind === "set") m[o.id] = clone(o.data);
+    else if (o.kind === "update") { if (!m[o.id]) return false; m[o.id] = Object.assign({}, m[o.id], clone(o.data)); }
+    else if (o.kind === "delete") delete m[o.id];
+    return true;
+  }
+  function send(){ post({type:"streamlit:setComponentValue", value:{ops:queue.slice(), t:Date.now()}, dataType:"json"}); }
+  function write(o){
+    if (!apply(o)) return Promise.reject({code:"invalid_argument", message:"Not found"});
+    o.opid = "o" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    queue.push(o); send(); emit(o.col); return Promise.resolve();
+  }
+  function ref(col, id){
+    return {id:id, path:col + "/" + id,
+      set:function(d){ return write({kind:"set", col:col, id:id, data:d}); },
+      update:function(d){ return write({kind:"update", col:col, id:id, data:d}); },
+      delete:function(){ return write({kind:"delete", col:col, id:id}); },
+      onSnapshot:function(cb){ var p = col + "/" + id; (docSubs[p] = docSubs[p] || []).push(cb);
+        readyP.then(function(){ var d = (STORE[col] || {})[id]; cb({id:id, exists:!!d, data:function(){ return d; }}); }); return function(){}; }};
+  }
+  function newId(){ return "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  var db = {
+    collection:function(col){ return {path:col, doc:function(id){ return ref(col, id || newId()); },
+      onSnapshot:function(cb){ (colSubs[col] = colSubs[col] || []).push(cb); readyP.then(function(){ cb(snap(col)); }); return function(){}; }}; },
+    doc:function(p){ var a = p.split("/"); return ref(a[0], a[1]); }
+  };
+  var yes = function(){ return Promise.resolve(true); };
+  window.claude = {use:function(name){
+    if (name === "db") return readyP.then(function(){ return db; });
+    if (name === "user") return Promise.resolve({can:yes, isOwner:yes, canEdit:yes});
+    return Promise.resolve(null);
+  }};
+  function fit(){
+    var h = 900;
+    try { h = window.parent.innerHeight || h; } catch(e) {}
+    post({type:"streamlit:setFrameHeight", height:h});
+  }
+  window.addEventListener("resize", fit);
+  window.addEventListener("message", function(ev){
+    var m = ev.data; if (!m || m.type !== "streamlit:render") return;
+    var args = m.args || {}, acked = args.acked || [];
+    queue = queue.filter(function(o){ return acked.indexOf(o.opid) < 0; });
+    STORE = clone(args.data || {});
+    queue.forEach(apply);
+    if (ready) { ready(); ready = null; }
+    var cols = {}; Object.keys(STORE).concat(Object.keys(colSubs)).forEach(function(c){ cols[c] = 1; });
+    Object.keys(cols).forEach(emit);
+    var b = document.getElementById("banner");
+    if (b && args.demo && !b.classList.contains("on")) { b.textContent = args.demo; b.classList.add("on"); }
+    fit();
+  });
+  post({type:"streamlit:componentReady", apiVersion:1});
+})();
+</script></head><body>
+<title>Bilgi CFA RC Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --card:#ffffff; --soft:#f1efec; --ink:#18191d; --mute:#676b74; --line:#e2dcd5;
+  --red:#b0182d; --red-soft:#f7e1e4; --green:#2b7655; --green-soft:#dcefe5; --amber:#a2660b; --amber-soft:#fbefd6; --blue:#2f5f95; --blue-soft:#e3ecf7;
+  --shadow:0 1px 2px rgba(30,20,10,.05),0 6px 20px rgba(30,20,10,.05);
+  --shadow-up:0 2px 4px rgba(30,20,10,.07),0 10px 26px rgba(30,20,10,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131417; --card:#1c1e22; --soft:#25282d; --ink:#eef0f3; --mute:#9aa0aa; --line:#2f3238;
+    --red:#e5475e; --red-soft:#3a1c22; --green:#5cc195; --green-soft:#1b3228; --amber:#e6a640; --amber-soft:#382b16; --blue:#7fb0e8; --blue-soft:#1c2a3b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); --shadow-up:0 2px 6px rgba(0,0,0,.5),0 12px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131417; --card:#1c1e22; --soft:#25282d; --ink:#eef0f3; --mute:#9aa0aa; --line:#2f3238;
+  --red:#e5475e; --red-soft:#3a1c22; --green:#5cc195; --green-soft:#1b3228; --amber:#e6a640; --amber-soft:#382b16; --blue:#7fb0e8; --blue-soft:#1c2a3b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); --shadow-up:0 2px 6px rgba(0,0,0,.5),0 12px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Hanken Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+a{color:var(--red)}
+.wrap{max-width:1060px;margin:0 auto;padding:0 16px}
+main.wrap{padding-top:20px;padding-bottom:72px}
+
+.head{background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
+.head .wrap{display:flex;align-items:center;gap:14px;height:56px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;white-space:nowrap}
+.logo{width:26px;height:26px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800}
+.nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:7px 12px;text-decoration:none;color:var(--mute);font-weight:700;font-size:14px;border-radius:999px;white-space:nowrap}
+.nav a:hover{color:var(--ink);background:var(--soft)}
+.nav a.on{color:var(--card);background:var(--ink)}
+.view{display:none}
+.view.on{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view.on{animation:none}}
+h1{font-size:28px;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em}
+h2{font-size:18px;margin:30px 0 10px;letter-spacing:-.01em}
+h3{font-size:16px;margin:0 0 4px}
+.lead{color:var(--mute);margin:0 0 18px;max-width:680px}
+.sub{color:var(--mute);font-size:13px}
+.link{background:none;border:0;color:var(--mute);font-size:13px;font-weight:700;padding:5px 8px;border-radius:8px;text-decoration:none}
+.link:hover{color:var(--ink);background:var(--soft)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--mute)}
+.tag.red{background:var(--red-soft);color:var(--red)} .tag.green{background:var(--green-soft);color:var(--green)} .tag.blue{background:var(--blue-soft);color:var(--blue)} .tag.amber{background:var(--amber-soft);color:var(--amber)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 16px;font-weight:800}
+.btn:hover{border-color:var(--ink)}
+.btn.p{background:var(--red);border-color:var(--red);color:#fff}
+.btn.p:hover{filter:brightness(1.08)}
+.btn.sm{padding:6px 12px;font-size:13px}
+
+/* countdown */
+.count{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:640px){.count{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.tile.next{background:linear-gradient(135deg,#8f1225,var(--red));border-color:transparent;color:#fff}
+.tile .n{font-size:36px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.tile .u{font-size:13px;font-weight:700;opacity:.75;margin-left:3px}
+.tile .w{font-weight:700;margin-top:10px}
+.tile .d{font-size:12px;opacity:.7}
+
+/* sprint */
+.sprint{margin-top:14px}
+.sp-head{display:flex;align-items:center;gap:8px}
+.arrow{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:16px;font-weight:800;display:grid;place-items:center}
+.arrow:hover:not(:disabled){border-color:var(--ink)}
+.arrow:disabled{opacity:.3;cursor:default}
+.sp-title{flex:1;min-width:0}
+.sp-title b{font-size:18px}
+.sp-title .sub{display:block}
+.goal{margin:10px 0 0}
+.goal b{color:var(--red)}
+.bar{height:8px;border-radius:6px;background:var(--soft);overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:100%;background:var(--green);transform-origin:left;transform:scaleX(0);transition:transform .35s}
+.bar-txt{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:6px}
+.people{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:2px;scrollbar-width:none}
+.people::-webkit-scrollbar{display:none}
+.person{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--line);background:var(--card);text-align:left}
+.person:hover{border-color:var(--mute)}
+.person[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.av{width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex:0 0 auto;border:2px solid var(--card);text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.stack{display:inline-flex}
+.stack .av{width:22px;height:22px;font-size:10px;margin-left:-6px}
+.stack .av:first-child{margin-left:0}
+.person .nm{font-weight:700;font-size:14px;line-height:1.1}
+.person .sc{font-size:12px;color:var(--mute)}
+.person .sc.all{color:var(--green);font-weight:700}
+.warn{color:var(--amber);font-weight:700}
+
+/* board */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;align-items:start}
+.board .col{padding:8px}
+@media (max-width:560px){.board{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:72%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.board .col{scroll-snap-align:start}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-bottom:6px}
+.cards .empty{grid-column:1/-1}
+.sq{position:relative;min-height:124px;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .15s,transform .15s}
+.sq:hover{box-shadow:var(--shadow-up);transform:translateY(-1px)}
+.sq .body{flex:1;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:none;border:0;padding:0;text-align:left;min-height:0;width:100%}
+.sq .ph{font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--red);background:var(--red-soft);border-radius:999px;padding:1px 7px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.sq .ph.role{color:var(--mute);background:var(--soft)}
+.sq .t{font-weight:700;font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:0 0 auto}
+.sq.done .t{color:var(--mute);text-decoration:line-through}
+.sq .sqm{font-size:10px;color:var(--mute)}
+.sq .minibar{width:100%;margin-top:0}
+.sq .foot{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--mute);margin-top:4px;white-space:nowrap}
+.sq .foot .av{width:20px;height:20px;font-size:9px}
+.sq .foot .r{margin-left:auto}
+.sq .go{padding:3px 7px;font-size:10px;border-radius:8px}
+.col{background:var(--soft);border-radius:16px;padding:10px;min-height:110px}
+.col h3{display:flex;align-items:center;gap:8px;margin:2px 4px 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.col h3 .dot{width:8px;height:8px;border-radius:50%}
+.col h3 .c{margin-left:auto;background:var(--card);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink)}
+.card{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px;box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s}
+.card:hover{box-shadow:var(--shadow-up);transform:translateY(-1px)}
+.card .body{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left}
+.card .t{font-weight:600;line-height:1.35}
+.card.done .t{color:var(--mute);text-decoration:line-through}
+.meta{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:12px;color:var(--mute);flex-wrap:wrap}
+.late{color:var(--red);font-weight:800}
+.go{flex:0 0 auto;border:0;border-radius:10px;padding:6px 10px;font-size:12px;font-weight:800;background:var(--red-soft);color:var(--red)}
+.go.doing{background:var(--green-soft);color:var(--green)}
+.go.back{background:var(--soft);color:var(--mute)}
+.add{width:100%;border:1.5px dashed var(--line);background:none;border-radius:12px;padding:10px;color:var(--mute);font-weight:700}
+.add:hover{border-color:var(--red);color:var(--red)}
+.empty{font-size:13px;color:var(--mute);text-align:center;padding:14px 4px}
+.rules-line{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;margin-top:20px;font-size:12px;color:var(--mute)}
+.rules-line b{color:var(--ink)}
+
+/* team */
+.pcard{display:flex;gap:12px;align-items:center;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow);transition:box-shadow .15s,transform .15s}
+.pcard:hover{box-shadow:var(--shadow-up);transform:translateY(-1px)}
+.pcard .av{width:46px;height:46px;font-size:18px}
+.pcard b{font-size:17px}
+.pcard.addp{border-style:dashed;box-shadow:none;color:var(--mute);justify-content:center;font-weight:800}
+.ring{margin-left:auto;text-align:right;font-size:12px;color:var(--mute)}
+.ring b{display:block;font-size:20px;color:var(--ink)}
+.collective{background:var(--ink);color:var(--bg);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.collective b{color:#ff8c9c}
+.mytask{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mytask:last-child{border-bottom:0}
+.mytask .body{flex:1;background:none;border:0;padding:0;text-align:left;font-weight:600}
+.mytask.done .body{color:var(--mute);text-decoration:line-through}
+
+/* learn, docs, map */
+.steps{counter-reset:s;display:grid;gap:10px}
+.step{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.step:before{content:counter(s);width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:grid;place-items:center;font-size:16px}
+.step p{margin:4px 0 0;color:var(--mute)}
+.why{margin-top:8px;font-size:14px;padding:8px 12px;border-radius:10px;background:var(--soft)}
+.why b{color:var(--ink)}
+.insight{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.insight .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.insight p.s{font-size:14px;margin:0;color:var(--mute)}
+.mini-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;min-width:480px}
+.mini-table th,.mini-table td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}
+.mini-table th:first-child,.mini-table td:first-child{text-align:left}
+.mini-table th{font-size:12px;color:var(--mute)}
+.mini-table tr.hl td{font-weight:800;color:var(--red)}
+.scroll-x{overflow-x:auto}
+.doc{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.doc .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.doc .t{font-weight:800}
+.doc .what{color:var(--mute);font-size:14px}
+.doc .look{font-size:14px}
+.doc a.open{margin-top:auto;align-self:flex-start;font-weight:800;text-decoration:none;background:var(--red-soft);border-radius:10px;padding:6px 12px}
+.passes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:700px){.passes{grid-template-columns:1fr}}
+.pass{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.pass .n{font-size:28px;font-weight:800;color:var(--red);line-height:1}
+.map{display:grid;gap:12px}
+.mstep{display:grid;grid-template-columns:150px 1fr 1fr;gap:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.mstep .h{background:var(--ink);color:var(--bg);padding:14px}
+.mstep .h .n{font-size:30px;font-weight:800;line-height:1;color:#ff8c9c}
+.mstep .h b{display:block;margin-top:6px;line-height:1.25}
+.mstep .h .when{font-size:12px;opacity:.7;margin-top:6px}
+.mstep .c{padding:14px;font-size:14px}
+.mstep .c + .c{border-left:1px solid var(--line)}
+.mstep .c .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-bottom:4px}
+.mstep .c.ours .k{color:var(--red)}
+.mstep .out{margin-top:8px;font-size:13px;color:var(--mute)}
+@media (max-width:760px){.mstep{grid-template-columns:1fr}.mstep .c + .c{border-left:0;border-top:1px solid var(--line)}}
+.parts{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);grid-column:1/-1}
+@media (max-width:900px){.parts{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.parts{grid-template-columns:1fr}}
+.part{padding:12px 14px;border-right:1px solid var(--line);font-size:13px;position:relative}
+.part:last-child{border-right:0}
+.part .pn{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px}
+.part .pn i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:var(--red);color:#fff}
+.part .pn i.done{background:var(--green)}
+.part .cf{color:var(--mute);margin-top:4px}
+.part .ow{margin-top:6px}
+.part .pd{font-size:11px;color:var(--mute);margin-top:6px;font-weight:700}
+.part .minibar{margin-top:6px}
+.part.now{background:var(--red-soft)}
+.ptasks{list-style:none;margin:8px 0 0;padding:0}
+.ptasks button{background:none;border:0;padding:3px 0;text-align:left;font-size:12px;color:var(--ink);font-weight:600}
+.ptasks button:hover{color:var(--red)}
+.where{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.where div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.where b{display:block}
+.where span{font-size:13px;color:var(--mute)}
+
+/* rules */
+.score{display:flex;height:56px;border-radius:12px;overflow:hidden;margin:10px 0}
+.score div{display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;font-weight:800;font-size:15px;border-right:2px solid var(--bg);min-width:0;text-align:center;line-height:1.1}
+.score div span{font-size:10px;font-weight:700;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;padding:0 2px}
+.rq{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rq:last-child{border-bottom:0}
+.rq .p{font-size:24px;font-weight:800;color:var(--red);text-align:center}
+.rq .p small{display:block;font-size:10px;color:var(--mute);font-weight:700}
+.rq .q{color:var(--mute);font-size:14px}
+.rulelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rule .ic{font-size:20px}
+.rule b{display:block;margin:4px 0 2px}
+.rule span{font-size:13px;color:var(--mute)}
+.meter{margin-top:6px}
+.meter .bar{margin-top:6px;height:10px}
+.meter.warn .bar i{background:var(--amber)} .meter.full .bar i{background:var(--red)}
+
+/* notes */
+.note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.note .body{white-space:pre-wrap;font-size:14px}
+.star{border:1px solid var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;color:var(--mute)}
+.star[aria-pressed="true"]{background:var(--amber-soft);border-color:transparent;color:var(--amber)}
+
+/* sheet */
+dialog{border:0;padding:0;border-radius:20px;width:min(500px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--card);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(15,10,10,.45);backdrop-filter:blur(2px)}
+.sheet{padding:20px}
+.sheet h2{margin:0 0 16px;font-size:19px}
+.f{margin-bottom:14px}
+.f>label{display:block;font-size:12px;font-weight:800;color:var(--mute);margin-bottom:6px}
+.f .hint{font-size:12px;color:var(--mute);margin-top:6px}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:10px 12px}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--red);outline-offset:0;background:var(--card)}
+.f textarea{min-height:110px;resize:vertical}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.pick button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px 4px 4px;display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
+.pick button.txt{padding:6px 12px}
+.pick button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--card)}
+.pick .av{width:24px;height:24px;font-size:10px;border:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+.btn.del{border:0;background:none;color:var(--red);padding-left:0}
+.btn.del.arm{background:var(--red);color:#fff;padding-left:14px}
+.mrow{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.mrow input,.mrow select{border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:8px 10px;width:100%;min-width:0}
+.swatch{width:34px;height:34px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer}
+.swatch::-webkit-color-swatch-wrapper{padding:0}.swatch::-webkit-color-swatch{border:2px solid var(--line);border-radius:50%}
+.x{border:0;background:none;color:var(--mute);font-size:16px;padding:4px 6px}
+.ckl{display:flex;flex-direction:column;gap:2px}
+.ck{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:10px}
+.ck:hover{background:var(--soft)}
+.ck input{width:18px;height:18px;accent-color:var(--green);flex:0 0 auto;margin:0}
+.ck span{flex:1;font-size:14px}
+.ck input:checked + span{color:var(--mute);text-decoration:line-through}
+.addrow{display:flex;gap:8px;margin-top:6px}
+.addrow input{flex:1}
+.ckc{font-weight:800;color:var(--green)}
+.ckc.half{color:var(--amber)}
+.minibar{height:4px;border-radius:3px;background:var(--soft);margin-top:8px;overflow:hidden}
+.minibar i{display:block;height:100%;width:100%;background:var(--green);transform-origin:left}
+/* road to CFA day */
+.road{position:relative;padding:24px 0 4px}
+.track{position:relative;height:64px;margin:0 18px}
+.zone{position:absolute;top:26px;height:12px;border-radius:6px;opacity:.9}
+.zone span{position:absolute;top:14px;left:0;font-size:10px;font-weight:800;color:var(--mute);white-space:nowrap}
+.station{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:11px;font-weight:800;white-space:nowrap}
+.station:after{content:"";display:block;width:2px;height:16px;background:var(--ink);margin:2px auto 0;opacity:.5}
+.station.low{top:44px}
+.station.low:after{display:none}
+.station.low:before{content:"";display:block;width:2px;height:6px;background:var(--ink);margin:0 auto 2px;opacity:.5}
+.todayline{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--red);z-index:2}
+.todayline b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);white-space:nowrap}
+.lanes{display:grid;gap:8px;margin-top:22px}
+.lane{display:grid;grid-template-columns:96px 1fr 44px;gap:10px;align-items:center}
+.lane .who{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lane .rail{position:relative;height:30px;margin:0 18px;border-radius:15px;background:var(--soft)}
+.lane .rail .trail{position:absolute;left:0;top:0;bottom:0;border-radius:15px;opacity:.25}
+.lane .rail .av{position:absolute;top:0;transform:translateX(-50%);transition:left .6s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.lane .rail .tl{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--red);opacity:.6}
+.lane .pc{font-size:12px;font-weight:800;text-align:right}
+.lane .pc.ahead{color:var(--green)} .lane .pc.behind{color:var(--amber)}
+@media (max-width:560px){.lane{grid-template-columns:64px 1fr 36px}.zone span{display:none}}
+.help-only{display:none}
+.is-help .help-only{display:block}
+.banner{display:none;margin-bottom:12px;padding:10px 14px;border-radius:12px;background:var(--amber-soft);color:var(--amber);font-size:14px}
+.banner.on{display:block}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1}
+.ro .edit-only{display:none!important}
+</style>
+
+<header class="head"><div class="wrap">
+  <a class="brand" href="#board" style="text-decoration:none;color:inherit" aria-label="Bilgi RC, go to Board"><span class="logo">RC</span>Bilgi CFA RC Hub</a>
+  <nav class="nav" id="nav">
+    <a href="#board">Board</a><a href="#team">Team</a><a href="#learn">Learn</a><a href="#docs">Docs</a><a href="#rules">Rules</a><a href="#notes">Notes</a><a href="#map">Map</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+<div class="banner" id="banner"></div>
+
+<!-- BOARD -->
+<section class="view" id="v-board">
+  <div class="toolbar"><div class="sub">CFA Research Challenge 2026-27 · Borusan Pipe</div><button class="link edit-only" id="editDates">Edit dates</button></div>
+  <div class="count" id="count" style="margin-top:8px"></div>
+  <div class="box sprint">
+    <div class="sp-head">
+      <button class="arrow" id="prev" aria-label="Previous sprint">‹</button>
+      <div class="sp-title"><b id="spName">Sprint</b><span class="sub" id="spDates"></span></div>
+      <button class="link edit-only" id="editSprint">Edit</button>
+      <button class="arrow" id="next" aria-label="Next sprint">›</button>
+    </div>
+    <p class="goal" id="spGoal"></p>
+    <div class="bar"><i id="spBar"></i></div>
+    <div class="bar-txt"><span id="spDone"></span><span id="spLeft"></span></div>
+    <div class="people" id="people"></div>
+  </div>
+  <div class="toolbar" style="margin-top:16px"><div class="sub" id="filterNote">Tap a person to see only their tasks.</div><button class="btn p sm edit-only" id="newTask">+ New task</button></div>
+  <div class="board" id="board"></div>
+  <div class="rules-line">
+    <span>Two people can <b>share</b> a task</span><span>Max <b>2</b> in Doing per person</span><span>Done means <b>someone else checked it</b></span><span>Monday: <b>update your cards</b></span>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="view" id="v-team">
+  <div class="toolbar"><h1>Team</h1><span id="folderBtn"></span></div>
+  <div class="collective"><b>Everyone learns everything.</b> A role only says who writes the first draft of a section. All five of us read the same documents, check each other's numbers, and can answer any judge question.</div>
+  <div class="grid" id="teamGrid"></div>
+  <div style="margin-top:12px"><button class="link edit-only" id="editTeam">Edit names and roles</button></div>
+</section>
+
+<section class="view" id="v-person"></section>
+
+<!-- LEARN -->
+<section class="view" id="v-learn">
+  <h1>Where do we start?</h1>
+  <p class="lead">Not with the DCF. A valuation is a story told in numbers, so we learn the story first. The method comes last, because the business decides the method.</p>
+  <div class="steps">
+    <div class="step"><div><h3>The story</h3><p>Read the latest investor presentation, then the first part of the 2025 Annual Report.</p>
+      <div class="why"><b>Done when</b> each of us can say in three sentences what Borusan sells, who buys it, and where the money comes from.</div></div></div>
+    <div class="step"><div><h3>The numbers</h3><p>Open the financial reports for 2023, 2024, 2025 and the latest quarter. Build one table in US dollars: sales volume, revenue, EBITDA, margin, debt, cash flow.</p>
+      <div class="why"><b>Why dollars?</b> The company gives its own guidance in dollars, so our numbers can be compared with it directly.</div></div></div>
+    <div class="step"><div><h3>The industry</h3><p>Who are the peers, and what moves demand? Borusan sells into four areas: infrastructure and projects, industrial and construction, automotive and industrial uses, and energy.</p>
+      <div class="why"><b>Ask</b> why Borusan's margin is higher or lower than its peers: price, volume, cost, or location?</div></div></div>
+    <div class="step"><div><h3>The method</h3><p>Only now. Our main tool is a DCF of the whole firm (free cash flow to the firm, discounted at WACC), checked against peer multiples like EV/EBITDA.</p>
+      <div class="why"><b>Why this pair?</b> The DCF shows what the business is worth from its own cash. Multiples show what the market pays for similar businesses. If the two disagree a lot, one of our assumptions is wrong.</div></div></div>
+  </div>
+
+  <h2>Quarterly report or investor presentation first?</h2>
+  <div class="grid">
+    <div class="box"><span class="tag red">1 · Presentation</span><h3 style="margin-top:8px">The map</h3><p class="sub" style="font-size:14px;margin:0">Short, visual, management's own story and KPIs. Best first read. But it is written to sell, so we never stop here.</p></div>
+    <div class="box"><span class="tag blue">2 · Annual report</span><h3 style="margin-top:8px">The full picture</h3><p class="sub" style="font-size:14px;margin:0">Strategy, plants, countries, risks, governance. Read once, slowly. It answers Business and Industry.</p></div>
+    <div class="box"><span class="tag green">3 · Financial reports</span><h3 style="margin-top:8px">The proof</h3><p class="sub" style="font-size:14px;margin:0">Audited numbers and the notes. Every number in our report comes from here, with page and date.</p></div>
+  </div>
+
+  <h2>One question per report section</h2>
+  <p class="lead">We never collect data "just in case". Every piece of data answers one of these questions.</p>
+  <div class="box" id="sectionQs"></div>
+
+  <h2>What CFA wants to see</h2>
+  <div class="grid">
+    <div class="insight"><div class="k">Page 1</div><h3>A clear call</h3><p class="s">Buy, Hold or Sell, a target price, and three reasons. Each reason carries a number from later pages.</p></div>
+    <div class="insight"><div class="k">Forecast</div><h3>Drivers, not guesses</h3><p class="s">Revenue = volume × price. Margin comes from where we are in the steel cycle. Every forecast line has a reason.</p></div>
+    <div class="insight"><div class="k">Valuation</div><h3>Know your key assumption</h3><p class="s">Judges always ask which assumption matters most. Show a sensitivity table for growth and discount rate.</p></div>
+    <div class="insight"><div class="k">Risks</div><h3>Probability and impact</h3><p class="s">A risk matrix, and what each big risk does to our target price.</p></div>
+    <div class="insight"><div class="k">ESG</div><h3>Only what changes value</h3><p class="s">For a steel pipe maker: carbon costs (CBAM), energy use, safety. Not a checklist.</p></div>
+    <div class="insight"><div class="k">Honesty</div><h3>Sources and AI</h3><p class="s">Public information only, every number with a source, every AI use written in our log.</p></div>
+  </div>
+
+  <h2>Borusan's own numbers show a cycle</h2>
+  <div class="insight">
+    <div class="k">Insight from the company's guidance page</div>
+    <p style="margin:6px 0 0">The EBITDA margin went from 18.2% in 2023 to 6.0% in 2024. Same company, very different year. Valued on its best year it looks cheap; on its worst year it looks expensive.</p>
+    <div class="scroll-x"><table class="mini-table">
+      <tr><th></th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th><th>2026 guide</th></tr>
+      <tr><td>Volume (m tons)</td><td>0.76</td><td>0.85</td><td>1.06</td><td>1.17</td><td>1.31</td><td>1.15-1.25</td></tr>
+      <tr><td>Revenue ($ bn)</td><td>0.8</td><td>1.3</td><td>1.7</td><td>1.7</td><td>1.8</td><td>2.2-2.4</td></tr>
+      <tr class="hl"><td>EBITDA margin</td><td>9.8%</td><td>14.9%</td><td>18.2%</td><td>6.0%</td><td>7.4%</td><td>9-11%</td></tr>
+    </table></div>
+    <div class="why" style="margin-top:12px"><b>What we do with it:</b> Damodaran's advice for cyclical companies is to use a normal, mid-cycle margin instead of the latest year. Our first big question: what is a normal margin for Borusan, and why?</div>
+    <p class="sub" style="margin:8px 0 0">Source: <a href="https://borusanpipe.com/investor-relations/guidance" target="_blank" rel="noopener">Borusan Pipe, Guidance</a>, read 18 Oct 2026 (current guidance after the Q2 2026 update).</p>
+  </div>
+
+  <h2>Example companies to learn from</h2>
+  <div class="grid">
+    <div class="box"><span class="tag blue">Closest twin</span><h3 style="margin-top:8px">Tenaris</h3>
+      <p style="font-size:14px;margin:4px 0">A global steel pipe maker. In its 2025 annual filing, North America is its largest region for pipe sales, close to half. Like Borusan, much of its business depends on US energy and US tariffs.</p>
+      <div class="why"><b>Learn from it:</b> how a pipe maker explains itself to investors: rig count, pipe prices, order backlog, tariffs. Check the exact share in the filing before we quote it.</div>
+      <p class="sub" style="margin:8px 0 0"><a href="https://www.sec.gov/Archives/edgar/data/0001190723/000155485526000490/ts-20251231.htm" target="_blank" rel="noopener">Tenaris Form 20-F 2025 (SEC)</a></p></div>
+    <div class="box"><span class="tag green">Winning student team</span><h3 style="margin-top:8px">U.S. Steel</h3>
+      <p style="font-size:14px;margin:4px 0">A University of Pittsburgh team won the 2020-21 CFA Society Pittsburgh challenge on U.S. Steel. They used Porter's Five Forces, a SWOT, and a Monte Carlo study of how steel prices change the value.</p>
+      <div class="why"><b>Learn from it:</b> for a steel company, show the judges how the price cycle moves the value, not one single number.</div>
+      <p class="sub" style="margin:8px 0 0"><a href="https://cba.pitt.edu/pitt-business-team-wins-cfa-society-pittsburgh-investment-research-challenge" target="_blank" rel="noopener">Pitt Business news</a></p></div>
+  </div>
+  <p class="sub" style="margin-top:12px">Deeper research on past winning reports is coming in our Winners' Playbook (target 22 Oct).</p>
+</section>
+
+<!-- DOCS -->
+<section class="view" id="v-docs">
+  <h1>Research and documents</h1>
+  <p class="lead">Only primary sources: the company, the regulator, the filing itself. Every link below opens the original document.</p>
+  <h2 style="margin-top:6px">How to read a report in three passes</h2>
+  <div class="passes">
+    <div class="pass"><div class="n">1</div><b>Skim, 10 minutes</b><div class="sub">Contents, highlights, the CEO letter. Where is everything?</div></div>
+    <div class="pass"><div class="n">2</div><b>Hunt</b><div class="sub">Take one question from your section. Find the table that answers it.</div></div>
+    <div class="pass"><div class="n">3</div><b>Write one insight</b><div class="sub">One sentence plus the source (document, page, date) in Notes.</div></div>
+  </div>
+  <div id="docGroups"></div>
+</section>
+
+<!-- RULES -->
+<section class="view" id="v-rules">
+  <h1>Rules and scoring</h1>
+  <p class="lead">Report and presentation count 50% each. If two teams tie, financial analysis decides first, then valuation.</p>
+  <h2 style="margin-top:6px">The report: 100 points</h2>
+  <div class="score" id="scoreReport"></div>
+  <div class="box" id="reportQs"></div>
+  <h2>The presentation: 100 points</h2>
+  <div class="score" id="scorePres"></div>
+  <p class="sub">Q&amp;A is worth as much as valuation. Everyone must be able to answer any question.</p>
+  <h2>Outside help used so far</h2>
+  <div class="grid" id="meters"></div>
+  <p class="sub">Counted from Notes of type "Help hour". Add one after every mentor or advisor meeting.</p>
+  <h2>What we must do</h2>
+  <div class="rulelist">
+    <div class="rule"><div class="ic">📄</div><b>10 + 10 pages</b><span>Report in English, 10 pages plus up to 10 pages of appendix.</span></div>
+    <div class="rule"><div class="ic">🌐</div><b>Public information only</b><span>Every number has a source: document, page, date.</span></div>
+    <div class="rule"><div class="ic">🤖</div><b>AI is allowed, if disclosed</b><span>Appendix B: what we used, how we checked it, how it shaped our judgment. Log every use in Notes.</span></div>
+    <div class="rule"><div class="ic">⏱️</div><b>Limited outside help</b><span>Industry mentor up to 6 hours, faculty advisor up to 10 hours.</span></div>
+    <div class="rule"><div class="ic">🚫</div><b>No other professionals</b><span>No outside analysts and no professional mock juries.</span></div>
+    <div class="rule"><div class="ic">🏢</div><b>Company contact</b><span>Only through the official process, like the kickoff Q&amp;A.</span></div>
+    <div class="rule"><div class="ic">✍️</div><b>Our own work</b><span>The report is written by the five of us.</span></div>
+  </div>
+</section>
+
+<!-- NOTES -->
+<section class="view" id="v-notes">
+  <div class="toolbar">
+    <div><h1>Notes</h1><p class="lead" style="margin:0">Insights with their source, meeting notes, kickoff questions, our AI log and help hours.</p></div>
+    <button class="btn p edit-only" id="addNote">+ Add</button>
+  </div>
+  <div class="pick" id="noteFilter" style="margin:16px 0"></div>
+  <div class="grid" id="noteList"></div>
+</section>
+
+<!-- MAP -->
+<section class="view" id="v-map">
+  <h1>The map: the CFA way and our way</h1>
+  <p class="lead">The CFA curriculum describes valuation in five steps. Below: the road to CFA day, then each step with what we actually do for Borusan.</p>
+  <div class="box">
+    <div class="toolbar"><h3 style="margin:0">Road to CFA day</h3><span class="sub">Your dot moves as you finish tasks. Stay ahead of the red line.</span></div>
+    <div class="road"><div class="track" id="track"></div></div>
+    <div class="lanes" id="lanes"></div>
+  </div>
+  <h2>Five steps</h2>
+  <div class="map" id="mapSteps"></div>
+  <h2>Proven by winners</h2>
+  <div class="insight"><div class="k">Research in progress</div><p class="s">Which valuation methods past winning teams used, and how the CFA curriculum teaches each step. Results land here, with links to the original reports.</p></div>
+
+  <h2>How we assign work</h2>
+  <div class="grid">
+    <div class="insight"><div class="k">Roles</div><h3>A role is a first draft</h3><p class="s">Each section has one person who writes the first draft. Everyone else reads, checks and can explain it.</p></div>
+    <div class="insight"><div class="k">Sharing</div><h3>Join or leave a task</h3><p class="s">Open a task and tap names to add or remove people. Two can share. If everyone leaves, it shows "No owner yet" and we pick someone on Monday.</p></div>
+    <div class="insight"><div class="k">Quality</div><h3>Four eyes on every number</h3><p class="s">A task is Done only when a second person has checked it against the source.</p></div>
+    <div class="insight"><div class="k">Focus</div><h3>Two at a time</h3><p class="s">Nobody holds more than two tasks in Doing. Finishing beats starting.</p></div>
+  </div>
+
+  <h2>What lives where</h2>
+  <div class="where">
+    <div><b>This app</b><span>Plan, tasks, sources, notes, AI log, help hours, kickoff questions.</span></div>
+    <div><b>Excel</b><span>The model and the assumption book: every input with its source.</span></div>
+    <div><b>Word or Google Docs</b><span>The 10-page report and the appendix.</span></div>
+    <div><b>PowerPoint</b><span>The presentation for the final.</span></div>
+    <div><b>Shared folder</b><span id="folderWhere">Link it in Team, so everyone finds the files.</span></div>
+  </div>
+</section>
+</main>
+
+<dialog id="dlg"><form class="sheet" id="sheet" method="dialog"></form></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+var COLORS = ["#b0182d","#2f5f95","#2b7655","#a2660b","#6b4fa0","#0f7c8c","#c0543a","#4a5568"];
+var COLS = [{k:"todo",t:"To do",c:"#9aa0aa"},{k:"doing",t:"Doing",c:"#e6a640"},{k:"done",t:"Done",c:"#2b7655"}];
+var WIP = 2;
+var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+var SECTIONS = {
+  BD:  {t:"Business description", p:5,  c:"#8a8f98", q:"What does Borusan sell, to whom, and where?"},
+  IND: {t:"Industry & competition", p:10, c:"#2f5f95", q:"Is this a good industry, and is Borusan stronger than its peers?"},
+  INV: {t:"Investment summary", p:15, c:"#6b4fa0", q:"In one page, why should an investor care? We write it last."},
+  VAL: {t:"Valuation", p:20, c:"#b0182d", q:"How did we turn forecasts into a value, and why do we trust it?"},
+  FIN: {t:"Financial analysis", p:20, c:"#a2660b", q:"What do the numbers say about the past, and do they support our forecast?"},
+  RISK:{t:"Investment risks", p:15, c:"#0f7c8c", q:"What could make us wrong, and how much would it cost?"},
+  ESG: {t:"ESG", p:15, c:"#2b7655", q:"Which environmental, social and governance issues truly change value?"}
+};
+var PRES = [["Financial analysis",20,"#a2660b"],["Valuation",20,"#b0182d"],["Presentation",20,"#6b4fa0"],["Q&A",20,"#2f5f95"],["ESG",10,"#2b7655"],["Team",5,"#0f7c8c"],["Slides",5,"#8a8f98"]];
+var ROLES = {
+  val: {t:"Valuation", secs:["VAL","INV"], does:"Builds the DCF and the multiples check. Writes the first draft of the target price and the sensitivity table.", docs:["guidance","pres2q26","rating","damodaran"]},
+  fin: {t:"Financial analysis", secs:["FIN"], does:"Five years of numbers in US dollars, the key ratios, and the link from past to forecast.", docs:["fr2q26","fr2025","fr2024","fr2023","earn2q26"]},
+  ind: {t:"Industry & business", secs:["IND","BD"], does:"What Borusan sells and to whom, the demand chain, peers, tariffs.", docs:["ar2025","pres2q26","usorder","tenaris"]},
+  esg: {t:"ESG & risks", secs:["ESG","RISK"], does:"The ESG issues that change value, and the risk matrix with price impact.", docs:["tsrs2025","sr2024","rating","cgov"]},
+  ed:  {t:"Editor & slides", secs:[], does:"One voice across the report, Harvard citations, charts and slides.", docs:["ar2025","pres2q26"]}
+};
+var MAP = [
+  {n:1, t:"Understand the business", when:"Oct 19 to Nov 8", secs:"Business 5 · Industry 10",
+   cfa:"Before any number, learn how the company makes money, who it competes with, and whether its industry is a good place to be.",
+   ours:"First we learn how the steel pipe business works. Then we read Borusan's own documents to see what it sells and where its money comes from. Its profit margin swings a lot: 18.2% in 2023, but only 6.0% in 2024.",
+   out:"Each of us can tell Borusan's story in three sentences.",
+   parts:[
+     {id:"1.1", t:"Sector", s:"2026-10-19", e:"2026-10-22", cfa:"Is steel a good industry to be in? Is Borusan stronger than its competitors?", ours:"We learn how a pipe maker earns money: it buys steel coil, turns it into pipe, and keeps the difference. We look at what past crises did to steel companies, and compare Borusan's margins with the sector."},
+     {id:"1.2", t:"Borusan & news", s:"2026-10-23", e:"2026-10-25", cfa:"Use the right sources: the company's own reports, official filings on KAP, and industry data.", ours:"We read Borusan's investor presentation and annual report. We find out what it sells, who buys it, and how much of the money comes from the US. We also check the latest news."},
+     {id:"1.3", t:"Financials", s:"2026-10-26", e:"2026-10-29", cfa:"Do the numbers tell the same story as the company?", ours:"We put five years of results in US dollars side by side. We find out why the margin fell from 2023 to 2024, how much debt Borusan has, and how it compares with the sector."},
+     {id:"1.4", t:"Earnings quality", s:"2026-10-30", e:"2026-11-01", cfa:"Is the profit real, or did one-time events make it look bigger?", ours:"We look for one-time items, like selling a building. We check that the cash coming in matches the profit. Then we write a clean profit number for each year."}
+   ]},
+  {n:2, t:"Forecast the future", when:"Nov 9 to Nov 22, after the kickoff and the Q3 results", secs:"Financial analysis 20",
+   cfa:"Predict the future from the things that drive the business, not by copying the past.",
+   ours:"We forecast sales as tons sold times price per ton, for each part of the business. We use the margin of a normal year, not the best or the worst one. The company's own forecast is something we check against, not something we copy.",
+   out:"A forecast table where every number has a reason and a source."},
+  {n:3, t:"Choose the method", when:"Nov 23 to Nov 30", secs:"Valuation 20",
+   cfa:"Pick the valuation method that fits this company. Often two methods that check each other.",
+   ours:"Our main method is a DCF: we add up the cash Borusan will make in the future, in US dollars, and bring it back to today's value. Then we check it against how the market prices similar companies, like Tenaris.",
+   out:"One page that explains why this method fits Borusan."},
+  {n:4, t:"Turn the forecast into a value", when:"December", secs:"Valuation 20",
+   cfa:"Use the method carefully: the right cash, with the right discount rate.",
+   ours:"We build the discount rate from the risk of the steel sector and of the countries where Borusan has factories. We find the value of the whole company, subtract its debt, and divide by the number of shares.",
+   out:"A target price per share, and a range we can defend."},
+  {n:5, t:"Make the call", when:"January, then the final in February", secs:"Summary 15 · Risks 15 · ESG 15",
+   cfa:"Compare our value with today's share price and decide what an investor should do.",
+   ours:"Page 1 of the report says Buy, Hold or Sell, with three reasons. We show the biggest risks and how much each one could change the price. We include only the ESG topics that really change the value, like carbon costs (CBAM).",
+   out:"The 10-page report, then the slides for the final."}
+];
+var BP = "https://borusanpipe.com/";
+var DOCS = [
+  {g:"Read first", id:"pres2q26", t:"2Q 2026 Investor Presentation", d:"7 Aug 2026", u:BP+"Uploads/investor/docs/2026/yatirimci-sunumlari/Borusan-Pipe-Investor-Presentation-2Q26.pdf", what:"Management tells its own story in slides. It is the fastest way to start.", look:"Look at how sales are split between the four business areas, and how sales volume and EBITDA changed each quarter.", use:["INV","FIN"]},
+  {g:"Read first", id:"ar2025", t:"2025 Annual Report", d:"12 Mar 2026", u:BP+"Uploads/investor/docs/faaliyetRaporlari/Borusan-Boru-2025-Yili-Faaliyet-Raporu-en.pdf", what:"The full story of the year: strategy, factories, countries, risks and who runs the company.", look:"Look at the business areas, where the factories and customers are, and the section on risks.", use:["BD","IND","RISK"]},
+  {g:"Read first", id:"guidance", t:"Guidance page", d:"updated each quarter", u:BP+"investor-relations/guidance", what:"The company's own forecast for this year, next to its results since 2021.", look:"Look at the EBITDA margin row. It shows the steel cycle in one line.", use:["VAL","FIN"]},
+  {g:"The numbers", id:"fr2q26", t:"2Q 2026 Financial Report", d:"7 Aug 2026", u:BP+"Uploads/investor/docs/2026/finansal-raporlar/borusan-boru-finansal-rapor-2c26.pdf", what:"The latest official financial statements, with notes that explain them.", look:"Look at the note on debt, the note on business segments, and the cash flow statement.", use:["FIN","VAL"]},
+  {g:"The numbers", id:"fr2025", t:"2025 Financial Report", d:"26 Feb 2026", u:BP+"Uploads/investor/docs/financial-reports/2025-financial-statement.pdf", what:"The checked (audited) financial statements for the whole of 2025.", look:"Look at the income statement, the balance sheet and the cash flow statement.", use:["FIN"]},
+  {g:"The numbers", id:"fr2024", t:"2024 Financial Report", d:"21 Feb 2025", u:BP+"Uploads/investor/docs/financial-reports/brsan_122024.pdf", what:"The audited statements for 2024, the year the margin was low.", look:"Find out why the margin fell: lower prices, higher costs, or fewer tons sold?", use:["FIN"]},
+  {g:"The numbers", id:"fr2023", t:"2023 Financial Report", d:"1 Mar 2024", u:BP+"Uploads/raporlar/finansal_raporlar/brsan_122023.pdf", what:"The audited statements for 2023, the year the margin was high.", look:"See what a strong year looks like, and read about buying Berg Pipe.", use:["FIN"]},
+  {g:"The numbers", id:"earn2q26", t:"2Q 2026 Earnings Announcement", d:"7 Aug 2026", u:BP+"Uploads/investor/docs/2026/duyurular/borusan-pipe-earnings-announcement-2q26.pdf", what:"A short summary of the quarter, in the company's own words.", look:"Look at the main numbers and at what management says caused them.", use:["FIN","INV"]},
+  {g:"ESG", id:"tsrs2025", t:"TSRS Sustainability Report 2025", d:"2025", u:BP+"Content/assets/pdf/reports/Borusan-Birlesik-Boru-TSRS-Report.pdf", what:"A sustainability report under Türkiye's new rules (TSRS). It puts a money value on climate risks.", look:"Look at the climate risks and opportunities, the emissions, and the plan to cut them.", use:["ESG","RISK"]},
+  {g:"ESG", id:"sr2024", t:"Sustainability Report 2024", d:"2024", u:BP+"Content/assets/pdf/reports/Borusan-Pipe-Sustainability-Report-2024.pdf", what:"Emissions, energy, safety and people, year by year.", look:"Look at how emissions changed, how much power is renewable, and the safety record.", use:["ESG"]},
+  {g:"Risk and governance", id:"rating", t:"Credit rating announcement", d:"28 Aug 2026", u:BP+"Uploads/investor/docs/2026/ozel-durum-aciklamalari/credit-rating-28092026.pdf", what:"How a rating agency judges Borusan's ability to pay back its debt.", look:"Look at the rating and the outlook. It helps us estimate what Borusan pays to borrow.", use:["VAL","RISK"]},
+  {g:"Risk and governance", id:"cgov", t:"Shareholder structure", d:"current", u:BP+"investor-relations/corporate-governance/partnership-structure", what:"Who owns the company, and how many shares trade freely on the stock market.", look:"Look at the main owners and the free float (shares anyone can buy).", use:["BD","ESG"]},
+  {g:"News", id:"usorder", t:"New sales order in the US", d:"21 Aug 2026", u:BP+"Uploads/investor/docs/2026/ozel-durum-aciklamalari/receipt-of-new-sales-order-in-the-united-states-of-america.pdf", what:"An official announcement of a new order from a US customer.", look:"Look at how big the order is and when it will be delivered. It tells us about future sales.", use:["IND","FIN"]},
+  {g:"News", id:"news", t:"All official announcements", d:"live", u:BP+"investor-relations/announcements/material-disclosures", what:"Every official announcement, newest first.", look:"Look for new orders, rating changes and the dates of the next results.", use:["IND"]},
+  {g:"Outside sources", id:"damodaran", t:"Damodaran data: betas, risk premiums, margins", d:"updated each January", u:"https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html", what:"Free data from an NYU professor. We use it for the discount rate and to compare with the sector.", look:"Look for the Steel row in the margins and betas tables, and Türkiye's country risk premium.", use:["VAL"]},
+  {g:"Outside sources", id:"tenaris", t:"Tenaris annual filing 2025 (Form 20-F)", d:"2026", u:"https://www.sec.gov/Archives/edgar/data/0001190723/000155485526000490/ts-20251231.htm", what:"The yearly report of a big global pipe maker, our closest competitor.", look:"Look at sales by region and how they explain the ups and downs of the pipe business.", use:["IND"]}
+];
+var DOC = {}; DOCS.forEach(function(d){ DOC[d.id] = d; });
+var PHASES = {"1.1":"1.1 Sector","1.2":"1.2 Borusan & news","1.3":"1.3 Financials","1.4":"1.4 Earnings quality","2":"2 Forecast","3":"3 Model","4":"4 Value","5":"5 Conclusion"};
+var NKIND = {note:{t:"Insight",c:"blue"}, meeting:{t:"Meeting",c:"green"}, question:{t:"Kickoff question",c:"red"}, ai:{t:"AI use",c:"amber"}, help:{t:"Help hour",c:""}};
+
+var S = {db:null, ro:false, tasks:[], sprints:[], members:[], events:[], notes:[], links:{}, sp:null, who:null, nf:"all", ready:{}};
+
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function today(){ var d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function days(iso){ return Math.round((new Date(iso+"T00:00:00") - new Date(today()+"T00:00:00"))/864e5); }
+function fd(iso){ if(!iso) return ""; var p=iso.split("-"); return MON[+p[1]-1]+" "+(+p[2]); }
+function toast(m){ var t=$("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toast.h); toast.h=setTimeout(function(){ t.classList.remove("on"); },2400); }
+function banner(m){ var b=$("banner"); b.textContent=m; b.classList.add("on"); }
+function safeUrl(u){ return /^https?:\/\//i.test(u||"") ? u : ""; }
+
+/* people: a task has assignees (member ids or "all"); empty means it follows its role, or has no owner yet */
+function member(id){ for (var i=0;i<S.members.length;i++) if (S.members[i].id===id) return S.members[i]; return null; }
+function label(id){ if (id==="all") return "Everyone"; if (!id) return "No owner yet"; var m=member(id); return m ? (m.name||"?") : "Former member"; }
+function color(id){ if (id==="all") return "#4a5568"; var i=S.members.findIndex(function(m){ return m.id===id; }); if (i<0) return "#9aa0aa"; var c = S.members[i].color; return /^#[0-9a-f]{6}$/i.test(c||"") ? c : COLORS[i%COLORS.length]; }
+function inkOn(hex){ return "#ffffff"; }
+function avStyle(id){ if (id==="all") return "background:#18191d;color:#FFE600"; var c=color(id); return "background:"+c+";color:"+inkOn(c); }
+function av(id){ var ch = id==="all" ? "★" : (!id ? "?" : (label(id).charAt(0).toUpperCase()||"?")); return '<span class="av" style="'+avStyle(id)+'">'+esc(ch)+'</span>'; }
+function owners(t){
+  var a = Array.isArray(t.assignees) ? t.assignees.filter(Boolean) : (t.owner ? [t.owner] : []);
+  if (a.length) return a;
+  if (t.role){ var m = S.members.find(function(x){ return x.role===t.role; }); if (m) return [m.id]; }
+  return [];
+}
+function has(t, id){ var o = owners(t); return id==="" ? !o.length : o.indexOf(id)>=0; }
+function isMine(t, id){ var o = owners(t); return o.indexOf(id)>=0 || o.indexOf("all")>=0; }
+function stepsInfo(t){ var st = Array.isArray(t.steps) ? t.steps : []; if (!st.length) return ""; var d = st.filter(function(x){ return x.d; }).length; return '<span class="ckc'+(d<st.length?" half":"")+'">☑ '+d+'/'+st.length+'</span>'; }
+function stepsBar(t){ var st = Array.isArray(t.steps) ? t.steps : []; if (!st.length || t.status==="done") return ""; var d = st.filter(function(x){ return x.d; }).length; return '<div class="minibar"><i style="transform:scaleX('+(d/st.length)+')"></i></div>'; }
+function ownerLine(t){ var o = owners(t); if (!o.length) return av("")+'<span>No owner yet</span>'; return '<span class="stack">'+o.map(av).join("")+'</span><span>'+esc(o.map(label).join(" & "))+'</span>'; }
+
+/* backend: the shared db is the source of truth; we merge-update single fields so two people editing do not overwrite each other */
+function fail(e, creating){
+  if (e && e.code==="invalid_argument" && creating){ S.ro=true; document.body.classList.add("ro"); banner("View only. Ask Selin to add you as a Contributor."); }
+  else if (e && e.code==="quota_exceeded") toast("Storage is full. Delete old notes first.");
+  else toast("Not saved. Check your connection and try again.");
+}
+function need(){ if (!S.db){ toast("Open on claude.ai to save"); return false; } return true; }
+function create(col,data,id){ if(!need()) return Promise.reject(); var r = id ? S.db.collection(col).doc(id) : S.db.collection(col).doc(); return r.set(data).catch(function(e){ fail(e,true); throw e; }); }
+function upd(col,id,data){ if(!need()) return Promise.reject(); return S.db.collection(col).doc(id).update(data).catch(function(e){ fail(e,false); throw e; }); }
+function del(col,id){ if(!need()) return Promise.reject(); return S.db.collection(col).doc(id).delete().catch(function(e){ fail(e,false); throw e; }); }
+
+/* router */
+var VIEWS = ["board","team","learn","docs","rules","notes","map"];
+var CUR = ["board"];
+function go(v, sub){
+  CUR = [v, sub];
+  try { history.replaceState(null, "", "#"+v+(sub?"/"+sub:"")); } catch(e){}
+  route();
+}
+document.addEventListener("click", function(e){
+  var a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+  e.preventDefault(); var h = a.getAttribute("href").slice(1).split("/"); go(h[0]||"board", h[1]);
+});
+function readHash(){ try { var h = (location.hash||"").slice(1).split("/"); if (h[0]) CUR = [h[0], h[1]]; } catch(e){} }
+function route(){
+  var h = CUR, v = h[0] || "board";
+  if (VIEWS.indexOf(v)<0) v = "board";
+  var isPerson = v==="team" && h[1];
+  document.querySelectorAll(".view").forEach(function(x){ x.classList.remove("on"); });
+  $(isPerson ? "v-person" : "v-"+v).classList.add("on");
+  document.querySelectorAll("#nav a").forEach(function(a){ a.classList.toggle("on", a.getAttribute("href")==="#"+v); });
+  if (isPerson) renderPerson(h[1]);
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange", function(){ readHash(); route(); });
+
+/* countdown */
+function renderCount(){
+  var ev = S.events.length ? S.events : [{name:"Kickoff",date:"2026-11-09"}];
+  var nextIdx = -1;
+  ev.forEach(function(e,i){ if (nextIdx<0 && e.date && days(e.date)>=0) nextIdx=i; });
+  $("count").innerHTML = ev.map(function(e,i){
+    var big, unit;
+    if (e.date){ var n=days(e.date); big = n>0 ? n : (n===0 ? "Today" : "✓"); unit = n>0 ? (n===1?"day":"days") : ""; }
+    else { var p=(e.label||"?").split(" "); big = p[0]; unit = p.slice(1).join(" "); }
+    return '<div class="tile'+(i===nextIdx?" next":"")+'"><div><span class="n">'+esc(big)+'</span><span class="u">'+esc(unit)+'</span></div><div class="w">'+esc(e.name)+'</div><div class="d">'+(e.date?esc(fd(e.date)):"date to confirm")+'</div></div>';
+  }).join("");
+}
+
+/* sprint + board */
+function sorted(){ return S.sprints.slice().sort(function(a,b){ return (a.start||"") < (b.start||"") ? -1 : 1; }); }
+function pickCurrent(){ var l=sorted(), t=today(); var c = l.find(function(s){ return s.start<=t && t<=s.end; }) || l.find(function(s){ return s.start>t; }) || l[l.length-1]; return c ? c.id : "backlog"; }
+function views(){ return sorted().map(function(s){ return s.id; }).concat(["backlog"]); }
+function curSprint(){ return S.sprints.find(function(s){ return s.id===S.sp; }) || null; }
+function inSprint(t, id){ return id==="backlog" ? !S.sprints.some(function(s){ return s.id===t.sprint; }) : t.sprint===id; }
+function renderSprint(){
+  var v = views(), i = v.indexOf(S.sp); if (i<0){ S.sp = pickCurrent(); i = v.indexOf(S.sp); }
+  $("prev").disabled = i<=0; $("next").disabled = i>=v.length-1;
+  var s = curSprint();
+  $("spName").textContent = s ? s.name : "Backlog";
+  $("spDates").textContent = s ? fd(s.start)+" to "+fd(s.end) : "Later, not in a sprint yet";
+  $("spGoal").innerHTML = s ? (s.goal ? "<b>Goal</b> "+esc(s.goal) : "") : "Ideas and tasks for later sprints.";
+  $("editSprint").style.display = s ? "" : "none";
+  var list = S.tasks.filter(function(t){ return inSprint(t, S.sp); }), done = list.filter(function(t){ return t.status==="done"; }).length;
+  $("spBar").style.transform = "scaleX("+(list.length ? done/list.length : 0)+")";
+  $("spDone").textContent = done+" of "+list.length+" done";
+  if (s){ var n = days(s.end); $("spLeft").textContent = n>0 ? n+(n===1?" day":" days")+" left" : (n===0 ? "Last day" : "Finished"); } else $("spLeft").textContent = "";
+  var ids = S.members.map(function(m){ return m.id; });
+  if (list.some(function(t){ return has(t,"all"); })) ids.push("all");
+  if (list.some(function(t){ return !owners(t).length; })) ids.push("");
+  $("people").innerHTML = ids.map(function(id){
+    var mine = list.filter(function(t){ return has(t,id); }), d = mine.filter(function(t){ return t.status==="done"; }).length;
+    var doing = mine.filter(function(t){ return t.status==="doing"; }).length;
+    var sc = !mine.length ? "No tasks" : (d===mine.length ? "All done ✓" : d+"/"+mine.length+" done");
+    return '<button class="person" data-who="'+esc(id)+'" aria-pressed="'+(S.who===id)+'">'+av(id)+'<span><span class="nm">'+esc(label(id))+'</span><br><span class="sc'+(mine.length&&d===mine.length?" all":"")+'">'+sc+(doing>WIP?' · <span class="warn">'+doing+' in Doing</span>':"")+'</span></span></button>';
+  }).join("");
+  $("people").querySelectorAll(".person").forEach(function(b){ b.onclick = function(){ S.who = S.who===b.dataset.who ? null : b.dataset.who; renderBoardAll(); }; });
+  $("filterNote").textContent = S.who===null ? "Tap a person to see only their tasks." : "Showing "+label(S.who)+". Tap again to see everyone.";
+}
+$("prev").onclick = function(){ var v=views(); S.sp = v[Math.max(0,v.indexOf(S.sp)-1)]; renderBoardAll(); };
+$("next").onclick = function(){ var v=views(); S.sp = v[Math.min(v.length-1,v.indexOf(S.sp)+1)]; renderBoardAll(); };
+$("newTask").onclick = function(){ taskSheet(null); };
+
+function goBtn(t){
+  var st = t.status||"todo";
+  return st==="todo" ? '<button class="go edit-only" data-go="'+esc(t.id)+'" data-to="doing">Start</button>' :
+         st==="doing" ? '<button class="go doing edit-only" data-go="'+esc(t.id)+'" data-to="done">Done ✓</button>' :
+         '<button class="go back edit-only" data-go="'+esc(t.id)+'" data-to="doing" aria-label="Move back to Doing">↺</button>';
+}
+function bindTaskBtns(root){
+  root.querySelectorAll("[data-go]").forEach(function(b){ b.onclick = function(){ move(b.dataset.go, b.dataset.to); }; });
+  root.querySelectorAll("[data-open]").forEach(function(b){ b.onclick = function(){ taskSheet(S.tasks.find(function(t){ return t.id===b.dataset.open; })); }; });
+}
+function byDue(a,b){ return (a.due||"9")<(b.due||"9") ? -1 : ((a.due||"9")>(b.due||"9") ? 1 : (a.created||0)-(b.created||0)); }
+function renderBoard(){
+  var list = S.tasks.filter(function(t){ return inSprint(t, S.sp); }).filter(function(t){ return S.who===null || has(t,S.who); }).sort(byDue);
+  $("board").innerHTML = COLS.map(function(c){
+    var cards = list.filter(function(t){ return (t.status||"todo")===c.k; });
+    var html = cards.map(function(t){
+      var late = t.due && c.k!=="done" && days(t.due)<0;
+      var tag = t.phase && PHASES[t.phase] ? '<span class="ph">'+esc(PHASES[t.phase])+'</span>' : (t.role && ROLES[t.role] ? '<span class="ph role">'+esc(ROLES[t.role].t)+'</span>' : "");
+      var o = owners(t);
+      var who = o.length ? '<span class="stack" title="'+esc(o.map(label).join(" & "))+'">'+o.map(av).join("")+'</span>' : av("").replace('class="av"','class="av" title="No owner yet"');
+      var bits = [stepsInfo(t), t.due ? '<span class="'+(late?"late":"")+'">'+(late?"late, ":"")+esc(fd(t.due))+'</span>' : ""].filter(Boolean).join(" · ");
+      return '<div class="sq'+(c.k==="done"?" done":"")+'"><button class="body" data-open="'+esc(t.id)+'" title="'+esc(t.title)+'">'+tag+'<span class="t">'+esc(t.title)+'</span>'+(bits?'<span class="sqm">'+bits+'</span>':"")+stepsBar(t)+'</button><div class="foot">'+who+'<span class="r">'+goBtn(t)+'</span></div></div>';
+    }).join("");
+    if (!cards.length) html = '<div class="empty">'+(!S.ready.tasks ? "Loading..." : (c.k==="todo" ? "Nothing here" : (c.k==="doing" ? "Nothing in progress" : "Nothing done yet")))+'</div>';
+    return '<section class="col"><h3><span class="dot" style="background:'+c.c+'"></span>'+c.t+'<span class="c">'+cards.length+'</span></h3><div class="cards">'+html+'</div>'+(c.k==="todo"?'<button class="add edit-only" data-add="1">+ Add task</button>':'')+'</section>';
+  }).join("");
+  bindTaskBtns($("board"));
+  $("board").querySelector("[data-add]").onclick = function(){ taskSheet(null); };
+}
+function move(id, to){
+  if (S.ro) return;
+  var t = S.tasks.find(function(x){ return x.id===id; }); if (!t) return;
+  if (to==="doing"){
+    owners(t).filter(function(o){ return o!=="all"; }).forEach(function(o){
+      var n = S.tasks.filter(function(x){ return x.id!==id && x.status==="doing" && has(x,o); }).length;
+      if (n>=WIP) toast(label(o)+" already has "+n+" in Doing. Finish one first?");
+    });
+  }
+  upd("tasks", id, {status:to, updated:Date.now()}).then(function(){ if (to==="done") toast("Done ✓ Ask someone to check it."); }).catch(function(){});
+}
+
+/* team + person */
+function renderTeam(){
+  var cards = S.members.map(function(m){
+    var mine = S.tasks.filter(function(t){ return has(t,m.id); }), d = mine.filter(function(t){ return t.status==="done"; }).length;
+    var role = m.role && ROLES[m.role] ? ROLES[m.role].t : "Role not set yet";
+    return '<button class="pcard" data-p="'+esc(m.id)+'">'+av(m.id)+'<div><b>'+esc(m.name||"?")+'</b><div class="sub">'+esc(role)+'</div></div><div class="ring"><b>'+d+'/'+mine.length+'</b>tasks done</div></button>';
+  }).join("");
+  $("teamGrid").innerHTML = S.ready.team ? cards + '<button class="pcard addp edit-only" id="addPerson">+ Add person</button>' : '<div class="empty">Loading the team...</div>';
+  $("teamGrid").querySelectorAll("[data-p]").forEach(function(b){ b.onclick = function(){ go("team", b.dataset.p); }; });
+  var ap = $("addPerson"); if (ap) ap.onclick = function(){ teamSheet(true); };
+  var u = safeUrl(S.links.folder);
+  $("folderBtn").innerHTML = u ? '<a class="btn sm" href="'+esc(u)+'" target="_blank" rel="noopener">Shared folder ↗</a> <button class="link edit-only" id="editFolder">Edit</button>' : '<button class="btn sm edit-only" id="editFolder">+ Link shared folder</button>';
+  $("folderWhere").innerHTML = u ? '<a href="'+esc(u)+'" target="_blank" rel="noopener">Open our folder ↗</a>' : "Link it in Team, so everyone finds the files.";
+  var ef = $("editFolder"); if (ef) ef.onclick = folderSheet;
+}
+function docCard(d){
+  return '<div class="doc"><div class="top"><div class="t">'+esc(d.t)+'</div><span class="sub">'+esc(d.d)+'</span></div><div class="what">'+esc(d.what)+'</div><div class="look">'+esc(d.look)+'</div><div>'+d.use.map(function(k){ return '<span class="tag">'+esc(SECTIONS[k].t)+'</span> '; }).join("")+'</div><a class="open" href="'+esc(d.u)+'" target="_blank" rel="noopener">Open ↗</a></div>';
+}
+function taskRow(t){
+  var late = t.due && t.status!=="done" && days(t.due)<0, sp = S.sprints.find(function(s){ return s.id===t.sprint; });
+  return '<div class="mytask'+(t.status==="done"?" done":"")+'"><button class="body" data-open="'+esc(t.id)+'">'+esc(t.title)+'<div class="meta">'+ownerLine(t)+'<span>· '+(sp?esc(sp.name):"Backlog")+'</span>'+(t.due?'<span class="'+(late?"late":"")+'">· '+esc(fd(t.due))+'</span>':"")+stepsInfo(t)+(t.status==="doing"?'<span class="tag amber">Doing</span>':"")+'</div></button>'+goBtn(t)+'</div>';
+}
+function renderPerson(id){
+  var m = member(id), el = $("v-person");
+  if (!m){ el.innerHTML = '<p><a href="#team" class="link">‹ Team</a></p><div class="empty">'+(S.ready.team?"Person not found.":"Loading...")+'</div>'; return; }
+  var r = m.role && ROLES[m.role];
+  var mine = S.tasks.filter(function(t){ return isMine(t, id); }).sort(byDue);
+  var open = mine.filter(function(t){ return t.status!=="done"; }), done = mine.length - open.length;
+  var docs = (r ? r.docs : ["pres2q26","ar2025","guidance"]).map(function(k){ return DOC[k]; });
+  var cur = S.sprints.find(function(s){ return s.id===pickCurrent(); }), nowList = open.filter(function(t){ return cur && t.sprint===cur.id; });
+  el.innerHTML = '<p style="margin:0 0 10px"><a href="#team" class="link">‹ Team</a></p>'+
+    '<div style="display:flex;align-items:center;gap:14px"><span class="av" style="width:58px;height:58px;font-size:22px;'+avStyle(id)+'">'+esc((m.name||"?").charAt(0).toUpperCase())+'</span><div><h1 style="margin:0">'+esc(m.name||"?")+'</h1><div class="sub">'+(r?esc(r.t)+" (first draft)":"Role not set yet")+' · '+done+' of '+mine.length+' tasks done</div></div></div>'+
+    '<h2>This sprint'+(cur?' <span class="sub">'+esc(cur.name)+', '+esc(fd(cur.start))+' to '+esc(fd(cur.end))+'</span>':'')+'</h2>'+
+    '<div class="box">'+(nowList.length ? nowList.map(taskRow).join("") : '<div class="empty">Nothing open in this sprint.</div>')+'</div>'+
+    '<h2>Your part</h2><div class="box">'+(r ? '<p style="margin:0 0 6px">'+esc(r.does)+'</p>'+r.secs.map(function(k){ var s=SECTIONS[k]; return '<div class="rq"><div class="p">'+s.p+'<small>points</small></div><div><b>'+esc(s.t)+'</b><div class="q">'+esc(s.q)+'</div></div></div>'; }).join("")
+      : '<p style="margin:0">No role yet. Until we pick roles, everyone starts with the same three documents below. Roles are set in Team, under Edit names and roles.</p>')+'</div>'+
+    '<h2>Read first</h2><div class="grid">'+docs.map(docCard).join("")+'</div>'+
+    '<h2>All your open tasks</h2><div class="box">'+(open.length ? open.map(taskRow).join("") : '<div class="empty">All done ✓</div>')+'</div>';
+  bindTaskBtns(el);
+}
+
+/* learn, docs, rules, map */
+function renderStatic(){
+  var qs = ["BD","IND","FIN","VAL","RISK","ESG","INV"].map(function(k){ var s=SECTIONS[k]; return '<div class="rq"><div class="p">'+s.p+'<small>points</small></div><div><b>'+esc(s.t)+'</b><div class="q">'+esc(s.q)+'</div></div></div>'; }).join("");
+  $("sectionQs").innerHTML = qs; $("reportQs").innerHTML = qs;
+  $("scoreReport").innerHTML = ["BD","IND","INV","VAL","FIN","RISK","ESG"].map(function(k){ var s=SECTIONS[k]; return '<div style="flex:'+s.p+';background:'+s.c+'" title="'+esc(s.t)+'">'+s.p+'<span>'+esc(s.t)+'</span></div>'; }).join("");
+  $("scorePres").innerHTML = PRES.map(function(p){ return '<div style="flex:'+p[1]+';background:'+p[2]+'" title="'+esc(p[0])+'">'+p[1]+'<span>'+esc(p[0])+'</span></div>'; }).join("");
+  var groups = []; DOCS.forEach(function(d){ if (groups.indexOf(d.g)<0) groups.push(d.g); });
+  $("docGroups").innerHTML = groups.map(function(g){
+    var extra = g==="The numbers" ? '<div class="insight" style="margin-bottom:12px"><div class="k">Coming soon</div><b>Q3 2026 results arrive on 6 November</b>, three days before the kickoff. We read them first, then ask sharper questions on 9 November.</div>' : "";
+    return '<h2>'+esc(g)+'</h2>'+extra+'<div class="grid">'+DOCS.filter(function(d){ return d.g===g; }).map(docCard).join("")+'</div>';
+  }).join("") + '<p class="sub" style="margin-top:16px">All Borusan documents: <a href="https://borusanpipe.com/investor-relations" target="_blank" rel="noopener">Borusan Pipe Investor Relations (English)</a> · <a href="https://www.borusanboru.com/yatirimci-iliskileri" target="_blank" rel="noopener">Yatırımcı İlişkileri (Türkçe)</a> · official filings on <a href="https://www.kap.org.tr" target="_blank" rel="noopener">KAP</a></p>';
+}
+function renderMapSteps(){
+  var t0 = today(), nowSet = false;
+  $("mapSteps").innerHTML = MAP.map(function(m){
+    var parts = "";
+    if (m.parts){
+      parts = '<div class="parts">'+m.parts.map(function(p){
+        var ts = S.tasks.filter(function(t){ return t.phase===p.id; }), d = ts.filter(function(t){ return t.status==="done"; }).length;
+        var full = ts.length && d===ts.length, isNow = !full && !nowSet && t0<=p.e;
+        if (isNow) nowSet = true;
+        var badge = full ? '<i class="done">Done</i>' : (isNow ? '<i>'+(t0>=p.s?"Now":"Next")+'</i>' : "");
+        return '<div class="part'+(isNow?" now":"")+'"><div class="pn">'+esc(p.id)+' '+esc(p.t)+' '+badge+'</div><div class="cf">'+esc(p.cfa)+'</div><div class="ow"><b>What we do:</b> '+esc(p.ours)+'</div><div class="pd">'+esc(fd(p.s))+' to '+esc(fd(p.e))+' · '+(ts.length ? d+' of '+ts.length+(ts.length===1?' task':' tasks')+' done' : 'No tasks yet')+'</div><div class="minibar"><i style="transform:scaleX('+(ts.length?d/ts.length:0)+')"></i></div>'+
+          (ts.length ? '<ul class="ptasks">'+ts.map(function(t){ return '<li><button type="button" data-open="'+esc(t.id)+'">'+(t.status==="done"?"✓":(t.status==="doing"?"◐":"○"))+' '+esc(t.title)+'</button></li>'; }).join("")+'</ul>' : "")+'</div>';
+      }).join("")+'</div>';
+    }
+    return '<div class="mstep"><div class="h"><div class="n">'+m.n+'</div><b>'+esc(m.t)+'</b><div class="when">'+esc(m.when)+'</div><div class="when">'+esc(m.secs)+'</div></div>'+
+      '<div class="c"><div class="k">The CFA way</div>'+esc(m.cfa)+'</div><div class="c ours"><div class="k">Our way for Borusan</div>'+esc(m.ours)+'<div class="out"><b>We are done when:</b> '+esc(m.out)+'</div></div>'+parts+'</div>';
+  }).join("");
+  bindTaskBtns($("mapSteps"));
+}
+var ZONES = [{n:"1",s:"2026-10-19",e:"2026-11-08",c:"#8a8f98"},{n:"2",s:"2026-11-09",e:"2026-11-22",c:"#a2660b"},{n:"3",s:"2026-11-23",e:"2026-11-30",c:"#6b4fa0"},{n:"4",s:"2026-12-01",e:"2026-12-31",c:"#b0182d"},{n:"5",s:"2027-01-01",e:"2027-01-31",c:"#2f5f95"},{n:"Final prep",s:"2027-02-01",e:"2027-02-28",c:"#2b7655"}];
+var ROAD0 = "2026-10-19", ROAD1 = "2027-02-28";
+function approx(e){ if (e.date) return e.date; var m = {"Jan 2027":"2027-01-15","Feb 2027":"2027-02-15"}; return m[e.label] || null; }
+function pct(iso){ var a=new Date(ROAD0), b=new Date(ROAD1), x=new Date(iso); return Math.max(0, Math.min(100, (x-a)/(b-a)*100)); }
+function renderRoad(){
+  var tp = pct(today());
+  var ev = (S.events.length ? S.events : []).map(function(e){ return {name:e.name, d:approx(e), sure:!!e.date}; }).filter(function(e){ return e.d; });
+  $("track").innerHTML = ZONES.map(function(z){ var a=pct(z.s), b=pct(z.e); return '<div class="zone" style="left:'+a+'%;width:'+Math.max(0,b-a)+'%;background:'+z.c+'"><span>'+(z.n.length>1?z.n:"Step "+z.n)+'</span></div>'; }).join("")+
+    ev.map(function(e,i){ return '<div class="station'+(i%2?" low":"")+'" style="left:'+pct(e.d)+'%">'+esc(e.name)+(e.sure?"":" ?")+'</div>'; }).join("")+
+    '<div class="todayline" style="left:'+tp+'%"><b>Today</b></div>';
+  var lanes = S.members.map(function(m){
+    var mine = S.tasks.filter(function(t){ return isMine(t, m.id); }), d = mine.filter(function(t){ return t.status==="done"; }).length;
+    return {id:m.id, name:m.name||"?", p: mine.length ? d/mine.length*100 : 0, txt: d+"/"+mine.length};
+  });
+  var all = S.tasks.length, alld = S.tasks.filter(function(t){ return t.status==="done"; }).length;
+  lanes.push({id:"all", name:"Team", p: all ? alld/all*100 : 0, txt: alld+"/"+all});
+  $("lanes").innerHTML = S.ready.tasks && S.ready.team ? lanes.map(function(l){
+    var ahead = l.p >= tp, col = color(l.id);
+    return '<div class="lane"><div class="who">'+esc(l.name)+'</div><div class="rail"><div class="trail" style="width:'+l.p+'%;background:'+col+'"></div><div class="tl" style="left:'+tp+'%"></div><span class="av" style="left:'+l.p+'%;background:'+col+';color:'+inkOn(col)+'">'+esc(l.id==="all"?"★":l.name.charAt(0).toUpperCase())+'</span></div><div class="pc '+(ahead?"ahead":"behind")+'" title="'+esc(l.txt)+' tasks done">'+Math.round(l.p)+'%</div></div>';
+  }).join("") : '<div class="empty">Loading the team...</div>';
+}
+function renderMeters(){
+  var tot = {mentor:0, advisor:0};
+  S.notes.forEach(function(n){ if (n.kind==="help" && tot[n.with]!=null) tot[n.with] += +n.hours||0; });
+  var L = {advisor:["Faculty advisor",10], mentor:["Industry mentor",6]};
+  $("meters").innerHTML = ["advisor","mentor"].map(function(k){
+    var u = Math.round(tot[k]*100)/100, max = L[k][1], cls = u>=max ? "full" : (u>=max*0.8 ? "warn" : "");
+    return '<div class="box meter '+cls+'"><div class="toolbar"><b>'+L[k][0]+'</b><span><b style="font-size:20px">'+u+'</b> / '+max+' hours</span></div><div class="bar"><i style="transform:scaleX('+Math.min(1,u/max)+')"></i></div><div class="sub" style="margin-top:6px">'+(u>=max?"Limit reached.":(max-u)+" hours left")+'</div></div>';
+  }).join("");
+}
+
+/* notes */
+function renderNotes(){
+  var kinds = [{v:"all",t:"All"}].concat(Object.keys(NKIND).map(function(k){ return {v:k,t:NKIND[k].t}; }));
+  $("noteFilter").innerHTML = kinds.map(function(k){ var n = k.v==="all" ? S.notes.length : S.notes.filter(function(x){ return x.kind===k.v; }).length; return '<button type="button" class="txt" aria-pressed="'+(S.nf===k.v)+'" data-nf="'+k.v+'">'+esc(k.t)+' · '+n+'</button>'; }).join("");
+  $("noteFilter").querySelectorAll("[data-nf]").forEach(function(b){ b.onclick = function(){ S.nf = b.dataset.nf; renderNotes(); }; });
+  var list = S.notes.filter(function(n){ return S.nf==="all" || n.kind===S.nf; }).sort(function(a,b){
+    if (a.kind==="question" && b.kind==="question" && !!a.star!==!!b.star) return a.star ? -1 : 1;
+    return (b.created||0)-(a.created||0); });
+  $("noteList").innerHTML = list.length ? list.map(function(n){
+    var k = NKIND[n.kind] || NKIND.note, u = safeUrl(n.link);
+    var star = n.kind==="question" ? '<button class="star edit-only" data-star="'+esc(n.id)+'" aria-pressed="'+(!!n.star)+'">'+(n.star?"★ Shortlisted":"☆ Shortlist")+'</button>' : "";
+    var help = n.kind==="help" ? '<div class="sub"><b>'+esc(+n.hours||0)+' h</b> with '+(n.with==="mentor"?"industry mentor":"faculty advisor")+'</div>' : "";
+    return '<div class="note"><div class="toolbar"><span class="tag '+k.c+'">'+k.t+'</span><span>'+star+' <button class="link edit-only" data-ne="'+esc(n.id)+'">Edit</button></span></div><b>'+esc(n.title)+'</b><div class="sub">'+esc(n.author?label(n.author):(n.by||"Team"))+(n.date?' · '+esc(fd(n.date)):"")+'</div>'+help+(n.body?'<div class="body">'+esc(n.body)+'</div>':"")+(u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">Source ↗</a>':"")+'</div>';
+  }).join("") : '<div class="empty" style="grid-column:1/-1">'+(!S.ready.notes?"Loading...":"Nothing here yet. Add your first insight with its source.")+'</div>';
+  $("noteList").querySelectorAll("[data-ne]").forEach(function(b){ b.onclick = function(){ noteSheet(S.notes.find(function(n){ return n.id===b.dataset.ne; })); }; });
+  $("noteList").querySelectorAll("[data-star]").forEach(function(b){ b.onclick = function(){ var n = S.notes.find(function(x){ return x.id===b.dataset.star; }); if (n) upd("notes", n.id, {star:!n.star}).catch(function(){}); }; });
+  renderMeters();
+}
+$("addNote").onclick = function(){ noteSheet(null); };
+
+/* sheets: in-app confirm because browser confirm() is blocked inside the artifact frame */
+var dlg = $("dlg"), sheet = $("sheet"), onSave = null;
+function open(html, save, remove){
+  sheet.innerHTML = html + '<div class="acts"><div>'+(remove?'<button type="button" class="btn del" id="sDel">Delete</button>':"")+'</div><div style="display:flex;gap:8px"><button type="button" class="btn" id="sX">Cancel</button><button type="submit" class="btn p">Save</button></div></div>';
+  onSave = save;
+  $("sX").onclick = function(){ dlg.close(); };
+  if (remove){
+    var armed = false, b = $("sDel"), timer;
+    b.onclick = function(){
+      if (!armed){ armed = true; b.textContent = "Tap again to delete"; b.classList.add("arm"); timer = setTimeout(function(){ armed=false; b.textContent="Delete"; b.classList.remove("arm"); }, 3500); return; }
+      clearTimeout(timer); b.disabled = true;
+      Promise.resolve(remove()).then(function(){ dlg.close(); toast("Deleted"); }).catch(function(){ b.disabled=false; });
+    };
+  }
+  sheet.querySelectorAll(".pick").forEach(function(p){
+    var multi = p.dataset.multi==="1";
+    p.querySelectorAll("button").forEach(function(b){ b.onclick = function(){
+      if (multi){
+        var on = b.getAttribute("aria-pressed")!=="true";
+        b.setAttribute("aria-pressed", on);
+        if (on && b.dataset.v==="all") p.querySelectorAll("button").forEach(function(x){ if (x!==b) x.setAttribute("aria-pressed","false"); });
+        if (on && b.dataset.v!=="all") p.querySelectorAll('button[data-v="all"]').forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+        p.dataset.v = Array.prototype.filter.call(p.querySelectorAll("button"), function(x){ return x.getAttribute("aria-pressed")==="true"; }).map(function(x){ return x.dataset.v; }).join(",");
+      } else {
+        p.querySelectorAll("button").forEach(function(x){ x.setAttribute("aria-pressed", x===b?"true":"false"); }); p.dataset.v = b.dataset.v;
+      }
+      if (p.dataset.name==="kind") sheet.classList.toggle("is-help", p.dataset.v==="help");
+    }; });
+  });
+  dlg.showModal();
+}
+sheet.addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var f = {}; Array.prototype.forEach.call(sheet.elements, function(el){ if (el.name) f[el.name] = el.value.trim(); });
+  sheet.querySelectorAll(".pick").forEach(function(p){ f[p.dataset.name] = p.dataset.v; });
+  var btn = sheet.querySelector('button[type="submit"]'); btn.disabled = true;
+  Promise.resolve(onSave(f)).then(function(ok){ if (ok!==false){ dlg.close(); toast("Saved"); } }).catch(function(){}).then(function(){ btn.disabled = false; });
+});
+function pick(name, items, cur, multi){
+  var sel = multi ? cur : [cur];
+  return '<div class="pick" data-name="'+name+'"'+(multi?' data-multi="1"':'')+' data-v="'+esc(multi?cur.join(","):cur)+'">'+items.map(function(it){
+    return '<button type="button" class="'+(it.av?"":"txt")+'" data-v="'+esc(it.v)+'" aria-pressed="'+(sel.indexOf(it.v)>=0)+'">'+(it.av||"")+esc(it.t)+'</button>'; }).join("")+'</div>';
+}
+function taskSheet(t){
+  var isNew = !t;
+  t = t || {status:"todo", assignees: S.who ? [S.who] : [], sprint: S.sp==="backlog" ? "" : S.sp};
+  var cur = Array.isArray(t.assignees) ? t.assignees.slice() : (t.owner ? [t.owner] : []);
+  var people = S.members.map(function(m){ return {v:m.id, t:m.name||"?", av:av(m.id)}; }).concat([{v:"all", t:"Everyone", av:av("all")}]);
+  var roleHint = t.role && ROLES[t.role] ? 'If nobody is picked, it goes to whoever has the '+esc(ROLES[t.role].t)+' role.' : 'Tap names to add or remove people. Two people can share a task.';
+  var sps = sorted().map(function(s){ return '<option value="'+esc(s.id)+'"'+(s.id===t.sprint?" selected":"")+'>'+esc(s.name)+' · '+esc(fd(s.start))+'</option>'; }).join("");
+  open('<h2>'+(isNew?"New task":"Task")+'</h2>'+
+    '<div class="f"><label for="ft">What needs to be done?</label><input id="ft" name="title" required maxlength="140" value="'+esc(t.title||"")+'" placeholder="e.g. Find 5 years of revenue in USD"></div>'+
+    '<div class="f"><label>Who</label>'+pick("assignees", people, cur, true)+'<div class="hint">'+roleHint+'</div></div>'+
+    '<div class="f"><label>Status</label>'+pick("status", COLS.map(function(c){ return {v:c.k,t:c.t}; }), t.status||"todo")+'</div>'+
+    '<div class="f"><label>Checklist</label><div class="ckl" id="ckl"></div><div class="addrow"><input id="ckNew" placeholder="Add a step" maxlength="140" aria-label="New step"><button type="button" class="btn sm" id="ckAdd">Add</button></div></div>'+
+    '<div class="row2"><div class="f"><label for="fs">Sprint</label><select id="fs" name="sprint">'+sps+'<option value=""'+(!S.sprints.some(function(s){return s.id===t.sprint;})?" selected":"")+'>Backlog</option></select></div>'+
+    '<div class="f"><label for="fd">Due (optional)</label><input id="fd" type="date" name="due" value="'+esc(t.due||"")+'"></div></div>'+
+    '<div class="f"><label for="fp">Map step</label><select id="fp" name="phase"><option value="">None</option>'+Object.keys(PHASES).map(function(k){ return '<option value="'+k+'"'+(t.phase===k?" selected":"")+'>'+esc(PHASES[k])+'</option>'; }).join("")+'</select></div>',
+    function(f){
+      if (!f.title){ toast("Write the task first"); return false; }
+      var data = {title:f.title, assignees:f.assignees ? f.assignees.split(",").filter(Boolean) : [], status:f.status||"todo", sprint:f.sprint, due:f.due, phase:f.phase||"", steps:steps, updated:Date.now()};
+      if (isNew){ data.role = ""; data.created = Date.now(); return create("tasks", data); }
+      return upd("tasks", t.id, data);
+    },
+    isNew ? null : function(){ return del("tasks", t.id); });
+  var steps = (Array.isArray(t.steps) ? t.steps : []).map(function(x){ return {t:x.t, d:!!x.d}; });
+  function saveSteps(){ if (!isNew) upd("tasks", t.id, {steps:steps, updated:Date.now()}).catch(function(){}); }
+  function drawSteps(){
+    $("ckl").innerHTML = steps.length ? steps.map(function(x,i){ return '<label class="ck"><input type="checkbox" data-ci="'+i+'"'+(x.d?" checked":"")+'><span>'+esc(x.t)+'</span><button type="button" class="x edit-only" data-cx="'+i+'" aria-label="Remove step">✕</button></label>'; }).join("") : '<div class="sub" style="padding:4px 2px">No steps yet. Break the task into small boxes to tick.</div>';
+    $("ckl").querySelectorAll("[data-ci]").forEach(function(c){ c.onchange = function(){ steps[+c.dataset.ci].d = c.checked; saveSteps(); }; });
+    $("ckl").querySelectorAll("[data-cx]").forEach(function(b){ b.onclick = function(ev){ ev.preventDefault(); steps.splice(+b.dataset.cx,1); drawSteps(); saveSteps(); }; });
+  }
+  function addStep(){ var v = $("ckNew").value.trim(); if (!v) return; steps.push({t:v, d:false}); $("ckNew").value = ""; drawSteps(); saveSteps(); $("ckNew").focus(); }
+  $("ckAdd").onclick = addStep;
+  $("ckNew").onkeydown = function(ev){ if (ev.key==="Enter"){ ev.preventDefault(); addStep(); } };
+  drawSteps();
+}
+function noteSheet(n){
+  var isNew = !n; n = n || {kind: S.nf!=="all" ? S.nf : "note", author:"", date:today()};
+  var authors = S.members.map(function(m){ return {v:m.id, t:m.name||"?", av:av(m.id)}; });
+  open('<h2>'+(isNew?"New note":"Note")+'</h2>'+
+    '<div class="f"><label>Type</label>'+pick("kind", Object.keys(NKIND).map(function(k){ return {v:k,t:NKIND[k].t}; }), n.kind||"note")+'</div>'+
+    '<div class="f"><label for="nt">Title</label><input id="nt" name="title" required maxlength="160" value="'+esc(n.title||"")+'" placeholder="e.g. Margin fell in 2024 because energy pipe prices dropped"></div>'+
+    '<div class="row2 help-only"><div class="f"><label>With</label>'+pick("with", [{v:"advisor",t:"Faculty advisor"},{v:"mentor",t:"Industry mentor"}], n.with||"advisor")+'</div><div class="f"><label for="nh">Hours</label><input id="nh" name="hours" type="number" step="0.25" min="0" value="'+esc(n.hours||"")+'" placeholder="1"></div></div>'+
+    '<div class="f"><label for="nb">Text</label><textarea id="nb" name="body" placeholder="Insight: what it means for Borusan. AI use: tool, what for, how we checked it.">'+esc(n.body||"")+'</textarea></div>'+
+    '<div class="f"><label for="nl">Source link</label><input id="nl" name="link" type="url" value="'+esc(n.link||"")+'" placeholder="https://"></div>'+
+    '<div class="row2"><div class="f"><label>Who</label>'+pick("author", authors, n.author||"")+'</div><div class="f"><label for="ndt">Date</label><input id="ndt" type="date" name="date" value="'+esc(n.date||today())+'"></div></div>',
+    function(f){
+      if (!f.title){ toast("Give it a title"); return false; }
+      var data = {kind:f.kind||"note", title:f.title, body:f.body, link:f.link, author:f.author||"", date:f.date, updated:Date.now()};
+      if (data.kind==="help"){ data.with = f.with||"advisor"; data.hours = parseFloat(String(f.hours||"0").replace(",", "."))||0; if (!data.hours){ toast("Add the hours"); return false; } }
+      if (isNew){ data.created = Date.now(); return create("notes", data); }
+      return upd("notes", n.id, data);
+    },
+    isNew ? null : function(){ return del("notes", n.id); });
+  sheet.classList.toggle("is-help", (n.kind||"note")==="help");
+}
+function sprintSheet(s){
+  var isNew = !s; s = s || {};
+  open('<h2>'+(isNew?"New sprint":"Edit sprint")+'</h2>'+
+    '<div class="f"><label for="sn">Name</label><input id="sn" name="name" required value="'+esc(s.name||("Sprint "+(S.sprints.length+1)))+'"></div>'+
+    '<div class="row2"><div class="f"><label for="ss">Start</label><input id="ss" type="date" name="start" required value="'+esc(s.start||"")+'"></div><div class="f"><label for="se">End</label><input id="se" type="date" name="end" required value="'+esc(s.end||"")+'"></div></div>'+
+    '<div class="f"><label for="sg">Goal (one sentence)</label><input id="sg" name="goal" maxlength="120" value="'+esc(s.goal||"")+'"></div>'+
+    (isNew?"":'<button type="button" class="link" id="newSp" style="margin-bottom:8px">+ New sprint instead</button>'),
+    function(f){
+      if (!f.name || !f.start || !f.end){ toast("Name and dates please"); return false; }
+      if (f.end < f.start){ toast("End is before start"); return false; }
+      var data = {name:f.name, start:f.start, end:f.end, goal:f.goal};
+      if (isNew){ var id = "s"+Date.now(); return create("sprints", data, id).then(function(){ S.sp = id; }); }
+      return upd("sprints", s.id, data);
+    },
+    isNew ? null : function(){ return del("sprints", s.id).then(function(){ toast("Its tasks moved to Backlog"); }); });
+  var n = $("newSp"); if (n) n.onclick = function(){ dlg.close(); sprintSheet(null); };
+}
+$("editSprint").onclick = function(){ sprintSheet(curSprint()); };
+
+function teamSheet(addOne){
+  var draft = S.members.map(function(m,i){ return {id:m.id, name:m.name||"", role:m.role||"", color:color(m.id)}; });
+  if (addOne === true) draft.push({id:"m"+Date.now(), name:"", role:"", color:COLORS[draft.length%COLORS.length]});
+  var roleOpts = function(cur){ return '<option value="">No role yet</option>'+Object.keys(ROLES).map(function(k){ return '<option value="'+k+'"'+(k===cur?" selected":"")+'>'+esc(ROLES[k].t)+'</option>'; }).join(""); };
+  function rows(){ return draft.map(function(m,i){
+    return '<div class="mrow"><input type="color" class="swatch" data-i="'+i+'" data-k="color" value="'+esc(m.color)+'" aria-label="Colour"><input data-i="'+i+'" data-k="name" placeholder="Name" aria-label="Name" value="'+esc(m.name)+'"><select data-i="'+i+'" data-k="role" aria-label="Role">'+roleOpts(m.role)+'</select><button type="button" class="x" data-rm="'+i+'" aria-label="Remove">✕</button></div>'; }).join(""); }
+  open('<h2>Names and roles</h2><p class="sub" style="margin-top:-8px">A role means "writes the first draft". Role tasks follow the person automatically.</p><div id="mrows">'+rows()+'</div><button type="button" class="link" id="addM">+ Add person</button>',
+    function(){
+      var clean = draft.filter(function(m){ return m.name.trim(); }).map(function(m){ return {id:m.id, name:m.name.trim(), role:m.role, color:m.color}; });
+      return S.db ? S.db.doc("meta/team").set({members:clean, updated:Date.now()}).catch(function(e){ fail(e,true); throw e; }) : (need(), Promise.reject());
+    });
+  function bind(){
+    $("mrows").querySelectorAll("input,select").forEach(function(inp){ inp.oninput = inp.onchange = function(){ draft[+inp.dataset.i][inp.dataset.k] = inp.value; }; });
+    $("mrows").querySelectorAll("[data-rm]").forEach(function(b){ b.onclick = function(){
+      var m = draft[+b.dataset.rm];
+      if (S.tasks.some(function(t){ return has(t,m.id); })) toast((m.name||"This person")+" still has tasks. Reassign them after saving.");
+      draft.splice(+b.dataset.rm,1); $("mrows").innerHTML = rows(); bind(); }; });
+  }
+  bind();
+  $("addM").onclick = function(){ draft.push({id:"m"+Date.now(), name:"", role:"", color:COLORS[draft.length%COLORS.length]}); $("mrows").innerHTML = rows(); bind(); var ins = $("mrows").querySelectorAll('input[data-k="name"]'); ins[ins.length-1].focus(); };
+  if (addOne === true){ var ins = $("mrows").querySelectorAll('input[data-k="name"]'); ins[ins.length-1].focus(); }
+}
+$("editTeam").onclick = function(){ teamSheet(false); };
+function folderSheet(){
+  open('<h2>Shared folder</h2><div class="f"><label for="fl">Link to our Drive or OneDrive folder</label><input id="fl" name="folder" type="url" value="'+esc(S.links.folder||"")+'" placeholder="https://"></div>',
+    function(f){ if (f.folder && !safeUrl(f.folder)){ toast("Use a full https:// link"); return false; } return S.db ? S.db.doc("meta/links").set({folder:f.folder, updated:Date.now()}).catch(function(e){ fail(e,true); throw e; }) : (need(), Promise.reject()); });
+}
+function datesSheet(){
+  var ev = S.events.map(function(e){ return Object.assign({}, e); });
+  open('<h2>Key dates</h2>'+ev.map(function(e,i){
+    return '<div class="row2"><div class="f"><label for="en'+i+'">Name</label><input id="en'+i+'" name="n'+i+'" value="'+esc(e.name)+'"></div><div class="f"><label for="ed'+i+'">Date</label><input id="ed'+i+'" type="date" name="d'+i+'" value="'+esc(e.date||"")+'"></div></div>';
+  }).join(""),
+    function(f){
+      var out = ev.map(function(e,i){ return {id:e.id, name:f["n"+i]||e.name, date:f["d"+i]||null, label:e.label||""}; });
+      return S.db ? S.db.doc("meta/dates").set({events:out, updated:Date.now()}).catch(function(e){ fail(e,true); throw e; }) : (need(), Promise.reject());
+    });
+}
+$("editDates").onclick = datesSheet;
+
+/* boot: render immediately, then light up when the shared db answers; subscribe once per collection */
+function renderBoardAll(){ renderCount(); renderSprint(); renderBoard(); }
+function renderAll(){
+  renderBoardAll(); renderTeam(); renderNotes(); renderRoad(); renderMapSteps();
+  if (CUR[0]==="team" && CUR[1]) renderPerson(CUR[1]);
+}
+readHash(); renderStatic(); renderAll(); route();
+
+if (window.claude && typeof window.claude.use==="function"){
+  claude.use("user").then(function(u){ if (u) return u.can("data.write").then(function(x){ if (x===false){ S.ro=true; document.body.classList.add("ro"); } }); }).catch(function(){});
+  claude.use("db").then(function(db){
+    if (!db){ banner("Open this page on claude.ai while signed in to see the team data."); return; }
+    S.db = db;
+    var first = true;
+    function docs(s){ return s.docs.map(function(d){ var o=Object.assign({},d.data()); o.id=d.id; return o; }); }
+    function lost(e){ if (e && e.code!=="revoked") banner("Live connection lost. Reload the page."); }
+    db.collection("tasks").onSnapshot(function(s){ S.tasks = docs(s); S.ready.tasks = true; renderAll(); }, lost);
+    db.collection("notes").onSnapshot(function(s){ S.notes = docs(s); S.ready.notes = true; renderNotes(); }, lost);
+    db.collection("sprints").onSnapshot(function(s){
+      S.sprints = docs(s);
+      if (first && S.sprints.length){ first=false; S.sp = pickCurrent(); }
+      else if (S.sp && S.sp!=="backlog" && !S.sprints.some(function(x){ return x.id===S.sp; })) S.sp = pickCurrent();
+      renderAll();
+    }, lost);
+    db.doc("meta/team").onSnapshot(function(d){ S.members = d.exists ? (d.data().members||[]).map(function(m){ return Object.assign({},m); }) : []; S.ready.team = true; renderAll(); }, lost);
+    db.doc("meta/dates").onSnapshot(function(d){ S.events = d.exists ? (d.data().events||[]).map(function(e){ return Object.assign({},e); }) : []; renderBoardAll(); }, lost);
+    db.doc("meta/links").onSnapshot(function(d){ S.links = d.exists ? Object.assign({}, d.data()) : {}; renderTeam(); }, lost);
+  }).catch(function(){ banner("Could not open the team data."); });
+} else banner("Open this page on claude.ai to see the team data.");
+})();
+</script>
+
+</body></html>
