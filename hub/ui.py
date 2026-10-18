@@ -15,7 +15,7 @@ h1, h2, h3 { letter-spacing: -.01em; }
 .rc-sub { color:#676b74; font-size:13px; }
 .rc-count { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 @media (max-width:640px){ .rc-count { grid-template-columns:repeat(2,1fr); } }
-.rc-tile { background:#fff; border:1px solid #e2dcd5; border-radius:16px; padding:14px 16px; }
+.rc-tile { background:#fff; border:1px solid #e6e6e9; box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04); border-radius:16px; padding:14px 16px; }
 .rc-tile.next { background:linear-gradient(135deg,#8f1225,#b0182d); border-color:transparent; color:#fff; }
 .rc-tile .n { font-size:34px; font-weight:800; line-height:1; letter-spacing:-.03em; }
 .rc-tile .u { font-size:13px; font-weight:700; opacity:.75; margin-left:3px; }
@@ -26,7 +26,7 @@ h1, h2, h3 { letter-spacing: -.01em; }
 .rc-stack .rc-av:first-child { margin-left:0; }
 .rc-colh { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#676b74; margin:0 0 6px; }
 .rc-colh .dot { width:8px; height:8px; border-radius:50%; }
-.rc-colh .c { margin-left:auto; background:#fff; border-radius:999px; padding:0 8px; color:#18191d; }
+.rc-colh .c { margin-left:auto; background:#f1f1f3; border-radius:999px; padding:0 8px; color:#18191d; }
 .rc-ph { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#b0182d; background:#f7e1e4; border-radius:999px; padding:1px 7px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .rc-ph.role { color:#676b74; background:#eeeae5; }
 .rc-t { font-weight:700; font-size:13px; line-height:1.25; margin:4px 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -36,14 +36,14 @@ h1, h2, h3 { letter-spacing: -.01em; }
 .rc-late { color:#b0182d; font-weight:800; }
 .rc-bar { height:4px; border-radius:3px; background:#eeeae5; overflow:hidden; margin:5px 0 4px; }
 .rc-bar i { display:block; height:100%; background:#2b7655; }
-[class*="st-key-card_"] { background:#fff; border-radius:10px !important; min-height:150px; }
+[class*="st-key-card_"] { background:#fff; border-radius:10px !important; min-height:150px; box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.05); }
 [class*="st-key-card_"] button { min-height:26px; padding:0 9px; font-size:12px; }
 [class*="st-key-card_"] [class*="st-key-row_"] { flex-wrap:nowrap; }
 .rc-box { background:#fff; border:1px solid #e2dcd5; border-radius:16px; padding:14px 16px; margin-bottom:10px; }
 .rc-k { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#b0182d; }
 .rc-muted { color:#676b74; font-size:14px; }
 .rc-score { display:flex; height:54px; border-radius:12px; overflow:hidden; margin:8px 0; }
-.rc-score div { display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff; font-weight:800; border-right:2px solid #f4f2ef; min-width:0; line-height:1.1; text-align:center; }
+.rc-score div { display:flex; flex-direction:column; justify-content:center; align-items:center; color:#fff; font-weight:800; border-right:2px solid #ffffff; min-width:0; line-height:1.1; text-align:center; }
 .rc-score span { font-size:10px; font-weight:700; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .rc-mstep { border:1px solid #e2dcd5; border-radius:16px; overflow:hidden; background:#fff; margin-bottom:12px; }
 .rc-mstep .h { background:#18191d; color:#f4f2ef; padding:12px 16px; display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; }
@@ -132,7 +132,7 @@ def color(D, mid):
 
 def av(D, mid, size=None):
     ch = "★" if mid == "all" else ("?" if not mid else (label(D, mid)[:1].upper() or "?"))
-    style = f"background:{color(D, mid)}" + (f";width:{size}px;height:{size}px;font-size:{int(size*0.4)}px" if size else "")
+    style = ("background:#18191d;color:#FFE600" if mid == "all" else f"background:{color(D, mid)}") + (f";width:{size}px;height:{size}px;font-size:{int(size*0.4)}px" if size else "")
     return f'<span class="rc-av" style="{style}" title="{e(label(D, mid))}">{e(ch)}</span>'
 
 

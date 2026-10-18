@@ -4,6 +4,7 @@ Run locally:   streamlit run app.py
 Cloud setup:   see DEPLOY.md
 """
 import datetime as dt
+import os
 import time
 import uuid
 
@@ -15,7 +16,7 @@ from hub.store import make_store
 from hub.ui import (av, by_due, color, current_sprint_id, days, e, fd, has, in_sprint, inject_css, is_mine, label,
                     member, members, owners, role_name, sprints_sorted, steps_bar, steps_info, today)
 
-st.set_page_config(page_title="Bilgi RC Hub", page_icon="🟥", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Bilgi CFA RC Hub", page_icon="🟥", layout="wide", initial_sidebar_state="collapsed")
 inject_css()
 
 
@@ -31,7 +32,7 @@ def gate():
     pw = _secret("app_password")
     if not pw or st.session_state.get("ok"):
         return
-    st.title("Bilgi RC Hub")
+    st.title("Bilgi CFA RC Hub")
     st.caption("Team only. Ask Selin for the password.")
     if st.text_input("Password", type="password") == pw:
         st.session_state.ok = True
@@ -292,7 +293,7 @@ def card(data, t, status):
         st.html(f'{tag}<div class="rc-t{" done" if status == "done" else ""}" title="{e(t.get("title"))}">{e(t.get("title"))}</div>'
                 f'<div class="rc-m">{bits}</div>{steps_bar(t)}<div>{who}</div>')
         row = st.container(horizontal=True, gap="small", key=f"row_{t['id']}")
-        if row.button("✎", key=f"o_{t['id']}", help="Open the task"):
+        if row.button("Open", key=f"o_{t['id']}", help="Open the task"):
             task_dialog(t["id"])
         nxt = {"todo": ("Start", "doing"), "doing": ("Done ✓", "done"), "done": ("↺", "doing")}[status]
         if row.button(nxt[0], key=f"g_{t['id']}"):
@@ -602,7 +603,7 @@ def page_map():
         mine = all_t if m["id"] == "all" else [t for t in all_t if is_mine(data, t, m["id"])]
         p = (sum(1 for t in mine if t.get("status") == "done") / len(mine) * 100) if mine else 0
         lanes.append(f'<div class="rc-lane"><b style="font-size:13px">{e(m["name"])}</b><div class="rc-rail"><div class="tl" style="left:{tp}%"></div>'
-                     f'<span class="rc-av" style="left:{p}%;background:{color(data, m["id"])}">{e("★" if m["id"] == "all" else m["name"][:1])}</span></div>'
+                     f'<span class="rc-av" style="left:{p}%;{"background:#18191d;color:#FFE600" if m["id"] == "all" else "background:" + color(data, m["id"])}">{e("★" if m["id"] == "all" else m["name"][:1])}</span></div>'
                      f'<b style="font-size:12px;color:{"#2b7655" if p >= tp else "#a2660b"}">{p:.0f}%</b></div>')
     with st.container(border=True):
         st.markdown("**Road to CFA day** · Your dot moves as you finish tasks. Stay ahead of the red line.")
@@ -681,6 +682,9 @@ pages = [st.Page(page_board, title="Board", url_path="board", default=True),
          st.Page(page_notes, title="Notes", url_path="notes"),
          st.Page(page_map, title="Map", url_path="map"),
          st.Page(page_trash, title="Trash", url_path="trash")]
+if store().name == "local SQLite" and os.path.exists("/mount/src"):
+    st.warning("Demo mode: the shared database is not connected yet, so changes made here can be lost when the app restarts. "
+               "Keep using the claude.ai hub for real work until Supabase is connected (see DEPLOY.md).")
 nav = st.navigation(pages, position="top")
 nav.run()
 st.caption(f"Data: {store().name}")

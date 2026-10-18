@@ -1,10 +1,10 @@
 [theme]
 base = "light"
 primaryColor = "#b0182d"
-backgroundColor = "#f4f2ef"
-secondaryBackgroundColor = "#eeeae5"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f5f5f6"
 textColor = "#18191d"
-borderColor = "#e2dcd5"
+borderColor = "#e6e6e9"
 baseRadius = "10px"
 font = "Hanken Grotesk:https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap"
 

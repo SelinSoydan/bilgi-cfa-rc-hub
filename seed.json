@@ -308,6 +308,7 @@
    ],
    "created": 1792335600001,
    "due": "2026-10-18",
+   "phase": "",
    "role": "",
    "sprint": "s1",
    "status": "doing",
@@ -333,7 +334,8 @@
      "t": "Link the shared folder in Team"
     }
    ],
-   "title": "Team Zoom: agree roles and walk through the Map"
+   "title": "Team Zoom: agree roles and walk through the Map",
+   "updated": 1792312911724
   },
   "t02": {
    "assignees": [],
