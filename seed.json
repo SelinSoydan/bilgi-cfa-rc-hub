@@ -179,27 +179,27 @@
    "steps": [
     {
      "d": false,
-     "t": "How a pipe maker earns: the spread between pipe price and steel coil cost"
+     "t": "Read Annual Report 2025 p.34 and Presentation 2Q26 p.9-10. Write the spread in 3 sentences: coil in, pipe out, profit is the gap."
     },
     {
      "d": false,
-     "t": "Who buys pipes: energy, infrastructure, construction, automotive"
+     "t": "Who buys pipes: drillers (OCTG), pipeline and water projects (line pipe), construction, car makers. For each, what makes them spend? (rig count, budgets, rates, car output)"
     },
     {
      "d": false,
-     "t": "Past shocks: 2008 crisis, 2015 oil crash, 2018 US steel tariffs, 2020 COVID. What happened to steel companies?"
+     "t": "Crisis timeline: 2008, 2015 oil crash, 2018 Section 232 tariffs, 2020 COVID. One line each: what happened, why, what it did to pipe demand and margins. Add the source."
     },
     {
      "d": false,
-     "t": "Sector benchmark: Damodaran margins by sector (Steel)"
+     "t": "Benchmark: Borusan EBITDA margin 2021-25 (Guidance page) next to the US steel sector (Damodaran, Margins by Sector, Steel: EBITDA/sales 10.58%)."
     },
     {
      "d": false,
-     "t": "Who competes with Borusan (Tenaris and others)"
+     "t": "Ask 'so what?': in which years was Borusan above or below the sector, and why? Write 3 bullets for Borusan."
     },
     {
      "d": false,
-     "t": "Each of us: one insight in Notes with its source"
+     "t": "Each of us: one insight in Notes with document, page and date."
     }
    ],
    "title": "1.1 Steel sector: how it works and what crises do to it"
@@ -217,23 +217,27 @@
    "steps": [
     {
      "d": false,
-     "t": "2Q 2026 investor presentation: the story in 3 sentences"
+     "t": "Presentation 2Q26 p.4: Borusan in 3 sentences. What it sells, where, how big (2025: 1.31m tons, $1.8bn revenue, 7.4% EBITDA margin)."
     },
     {
      "d": false,
-     "t": "2025 Annual Report: segments, plants, countries"
+     "t": "Write the period next to every number. p.4 is full-year 2025; 1H26 revenue is $976.9m (p.21)."
     },
     {
      "d": false,
-     "t": "Share of revenue from the US"
+     "t": "US share: 73% in 2025 (p.4), 79% in 1H26 (p.13). Is this concentration a risk? Write your view."
     },
     {
      "d": false,
-     "t": "Latest news on KAP and the IR site: orders, rating, calendar"
+     "t": "Capacity vs revenue: Türkiye 1.05m tons, US 0.95m tons (p.5), but most revenue is US. What does that say about Turkish plants? (Gemlik, p.17)"
     },
     {
      "d": false,
-     "t": "Guidance: what management promises for 2026"
+     "t": "Backlog: about $2.6bn signed for 2026-2028 (p.4). Compare it with 2025 revenue of $1.8bn."
+    },
+    {
+     "d": false,
+     "t": "Latest news on KAP and the IR site: orders, credit rating, results calendar (Q3 results on Nov 6)."
     }
    ],
    "title": "1.2 Borusan and the news: what it sells, where revenue comes from"
@@ -251,19 +255,23 @@
    "steps": [
     {
      "d": false,
-     "t": "Revenue, EBITDA and margin 2021-2025 next to the guidance table"
+     "t": "One table 2021-2025: volume, revenue, EBITDA, margin. Sources: Guidance page and the annual financial reports."
     },
     {
      "d": false,
-     "t": "Why the margin fell from 2023 to 2024"
+     "t": "Why did margin fall from 18.2% (2023) to 6.0% (2024)? Split it into price, cost and volume using the 2024 Financial Report."
     },
     {
      "d": false,
-     "t": "Debt and cash flow"
+     "t": "Unit economics each year: revenue per ton and EBITDA per ton (2025: about $1,374 and $102)."
     },
     {
      "d": false,
-     "t": "Compare our margins with the sector benchmark"
+     "t": "Debt: net financial debt $225m (2Q25), $178m (2025), $144m (2Q26), Presentation p.22. Why is it falling?"
+    },
+    {
+     "d": false,
+     "t": "Compare with the sector benchmark and with Tenaris. Write 3 'so what' bullets."
     }
    ],
    "title": "1.3 Financial reports: do the numbers confirm the story?"
@@ -281,23 +289,27 @@
    "steps": [
     {
      "d": false,
-     "t": "Find one-off items: asset sales, provisions, currency gains"
+     "t": "Read the EBITDA footnote (Presentation 2Q26 p.21): what does Borusan leave out? Say it in plain words."
     },
     {
      "d": false,
-     "t": "Cash from operations versus net profit: do they move together?"
+     "t": "Find one-off items in the notes: asset sales, provisions, FX gains. List each with its page."
     },
     {
      "d": false,
-     "t": "Working capital swings: inventory, receivables"
+     "t": "Cash from operations vs net profit each year. If profit rises but cash does not, ask why."
     },
     {
      "d": false,
-     "t": "Accounting notes: reporting currency and inflation accounting"
+     "t": "Working capital: $247m (2Q25), $216m (2025), $168m (2Q26), Presentation p.22. Is cash being released, and will it last?"
     },
     {
      "d": false,
-     "t": "Our clean EBITDA for each year"
+     "t": "Accounting notes: reporting currency and inflation accounting. Which years can we compare fairly?"
+    },
+    {
+     "d": false,
+     "t": "Write our clean EBITDA for each year, with every adjustment explained."
     }
    ],
    "title": "1.4 Quality of earnings: is the profit real?"
@@ -311,31 +323,31 @@
    "phase": "",
    "role": "",
    "sprint": "s1",
-   "status": "doing",
+   "status": "done",
    "steps": [
     {
-     "d": false,
+     "d": true,
      "t": "Open the Map: the CFA way and our way"
     },
     {
-     "d": false,
+     "d": true,
      "t": "Agree names and roles (Team, Edit names and roles)"
     },
     {
-     "d": false,
+     "d": true,
      "t": "Everyone picks at least one Sprint 1 task"
     },
     {
-     "d": false,
+     "d": true,
      "t": "Pick our weekly meeting day"
     },
     {
-     "d": false,
+     "d": true,
      "t": "Link the shared folder in Team"
     }
    ],
    "title": "Team Zoom: agree roles and walk through the Map",
-   "updated": 1792312911724
+   "updated": 1792500000000
   },
   "t02": {
    "assignees": [],
@@ -347,31 +359,31 @@
    "steps": [
     {
      "d": false,
-     "t": "US 10-year Treasury yield, with date"
+     "t": "Risk-free rate: US 10-year Treasury yield with its date. Why US? We value Borusan in dollars."
     },
     {
      "d": false,
-     "t": "Mature market equity risk premium (Damodaran, January update)"
+     "t": "Mature market equity risk premium: Damodaran January update. Write why we use the implied premium (Session 4)."
     },
     {
      "d": false,
-     "t": "Türkiye country risk premium (Damodaran)"
+     "t": "Türkiye country risk premium (Damodaran). Decide: weight by where plants are or where revenue comes from (Session 4, lambda)."
     },
     {
      "d": false,
-     "t": "Steel industry unlevered beta (Damodaran, Betas by Sector)"
+     "t": "Bottom-up beta: Damodaran Betas by Sector, Steel (unlevered). Relever with Borusan's market debt/equity (Session 5)."
     },
     {
      "d": false,
-     "t": "Borusan's debt from the latest balance sheet"
+     "t": "Debt: financial debt and cash from the latest balance sheet. Cost of debt: check against the credit rating (28 Aug 2026)."
     },
     {
      "d": false,
-     "t": "Market value: share price × shares outstanding"
+     "t": "Market value: share price times shares outstanding, with the date."
     },
     {
      "d": false,
-     "t": "Write every source in the assumption book"
+     "t": "Write every input, source and date in the assumption book."
     }
    ],
    "title": "Discount rate inputs: risk-free rate, ERP, CRP, beta, debt"
@@ -388,31 +400,31 @@
    "steps": [
     {
      "d": false,
-     "t": "Revenue and EBITDA history"
+     "t": "Revenue and EBITDA 2021-2025 (Guidance page) in one sheet."
     },
     {
      "d": false,
-     "t": "Past free cash flow to the firm"
+     "t": "Past free cash flow to the firm: EBITDA minus tax, capex and change in working capital."
     },
     {
      "d": false,
-     "t": "Discount rate v0"
+     "t": "Discount rate v0 from the inputs task."
     },
     {
      "d": false,
-     "t": "5-year forecast"
+     "t": "5-year forecast: tons times price per ton by business line. Use a mid-cycle margin, not the best or worst year."
     },
     {
      "d": false,
-     "t": "Terminal value"
+     "t": "Terminal value: growth not above the risk-free rate."
     },
     {
      "d": false,
-     "t": "Firm value to value per share"
+     "t": "Firm value minus net debt ($144m, 2Q26), divided by shares: value per share."
     },
     {
      "d": false,
-     "t": "Sensitivity table"
+     "t": "Sensitivity: WACC times terminal growth. Which input moves value most?"
     }
    ],
    "title": "Build my mini-DCF v0 in Excel (learning model)"
@@ -428,27 +440,27 @@
    "steps": [
     {
      "d": false,
-     "t": "Download the last five annual financial reports (Docs)"
+     "t": "Get the annual financial reports 2021-2025 (Docs, IR site). Note each report's currency."
     },
     {
      "d": false,
-     "t": "Income statement in USD"
+     "t": "Income statement in USD: revenue, cost of sales, gross profit, EBITDA, net income. One column per year."
     },
     {
      "d": false,
-     "t": "Balance sheet in USD"
+     "t": "Balance sheet in USD: cash, receivables, inventory, fixed assets, debt, equity."
     },
     {
      "d": false,
-     "t": "Cash flow statement in USD"
+     "t": "Cash flow in USD: cash from operations, capex, dividends."
     },
     {
      "d": false,
-     "t": "Ratios: EBITDA margin, ROIC, net debt / EBITDA"
+     "t": "Ratios: EBITDA margin, ROIC, net debt/EBITDA, working capital. Mark the best and worst years."
     },
     {
      "d": false,
-     "t": "Compare with the company's guidance table"
+     "t": "Check: does 2025 revenue match the Guidance page ($1.8bn)? If not, find out why."
     }
    ],
    "title": "5 years of financial statements in USD + key ratios"
@@ -464,19 +476,27 @@
    "steps": [
     {
      "d": false,
-     "t": "5 to 8 listed pipe peers, starting with Tenaris"
+     "t": "Choose peers like an analyst: same pipes (welded line pipe, OCTG), US exposure, listed so data is public. Check: Tenaris, Vallourec, Welspun Corp, Jindal SAW, Cenergy."
     },
     {
      "d": false,
-     "t": "One line per peer: country, size, margin"
+     "t": "Peer table: country, product, revenue, EBITDA margin, % North America, source and date. Template: Tenaris 2025, margin 24.2%, North America ~49% of tubes sales (results, 18 Feb 2026)."
     },
     {
      "d": false,
-     "t": "Demand chain: who buys pipes, and why"
+     "t": "Explain the gap: why does Tenaris earn ~24% and Borusan 7.4%? Check product (seamless vs welded), own steel, services, scale."
     },
     {
      "d": false,
-     "t": "US tariff news, each with date and source"
+     "t": "Demand chain diagram: steel coil, Borusan, customers, and what drives their spending (Annual Report p.35-40, Presentation p.9)."
+    },
+    {
+     "d": false,
+     "t": "Tariff timeline: date, measure, who it hits, effect on Borusan. Start with Section 232 and antidumping cases on usitc.gov."
+    },
+    {
+     "d": false,
+     "t": "Test the idea: US-made pipe is protected, pipe shipped from Türkiye is exposed (Annual Report p.45)."
     }
    ],
    "title": "Peer list, demand chain and tariff news"
@@ -492,19 +512,23 @@
    "steps": [
     {
      "d": false,
-     "t": "The four segments, one sentence each"
+     "t": "Four business lines, one plain sentence each (Annual Report p.35-40)."
     },
     {
      "d": false,
-     "t": "Plants and countries"
+     "t": "Who buys each product and why. OCTG = pipes inside oil and gas wells. Line pipe = pipes that carry oil, gas and water."
     },
     {
      "d": false,
-     "t": "Share of revenue from the US (annual report)"
+     "t": "Plants and capacity: US 950k tons, Türkiye 1.05m tons (Presentation p.5). Which plant serves which line?"
     },
     {
      "d": false,
-     "t": "Our three-sentence story"
+     "t": "US share of revenue and how it grew: 26% in 2014 to 79% in 1H26 (Presentation p.13)."
+    },
+    {
+     "d": false,
+     "t": "Our three-sentence story. Test: could a 12-year-old understand it?"
     }
    ],
    "title": "Business description: products, customers, countries"
@@ -520,19 +544,23 @@
    "steps": [
     {
      "d": false,
-     "t": "TSRS 2025 report: the climate risks section"
+     "t": "TSRS Report 2025 p.29-35: list the climate risks the company itself names."
     },
     {
      "d": false,
-     "t": "Emissions trend over the years"
+     "t": "CBAM in plain words: what it is, when it applies, who pays (TSRS p.7 terms, p.33-35)."
     },
     {
      "d": false,
-     "t": "CBAM basics: what, when, who pays"
+     "t": "Why does Borusan call EU exports its most significant transition risk? (TSRS p.35)"
     },
     {
      "d": false,
-     "t": "Which ESG items could change value?"
+     "t": "Emissions trend over the years (Sustainability Report 2024)."
+    },
+    {
+     "d": false,
+     "t": "Analyst filter: keep only ESG items that change cash flows or the discount rate. Write how."
     }
    ],
    "title": "Sustainability report summary + CBAM basics"
@@ -571,23 +599,23 @@
    "steps": [
     {
      "d": false,
-     "t": "Create the shared folder"
+     "t": "Create one shared folder with subfolders: Sources, Model, Report, Slides, Notes."
     },
     {
      "d": false,
-     "t": "Link it in Team"
+     "t": "Link it in Team (Shared folder button)."
     },
     {
      "d": false,
-     "t": "Report template (Word)"
+     "t": "Report template in Word: 10 pages plus appendix, in the CFA RC section order."
     },
     {
      "d": false,
-     "t": "Slide template"
+     "t": "Slide template in our colours."
     },
     {
      "d": false,
-     "t": "One-page Harvard citation guide"
+     "t": "One-page Harvard citation guide with 3 examples: an annual report, a website, a data source."
     }
    ],
    "title": "Shared folder, Harvard citations, report and slide templates"
@@ -604,11 +632,15 @@
    "steps": [
     {
      "d": false,
-     "t": "Write 2 questions in Notes as Kickoff question"
+     "t": "Write 2 questions in Notes as Kickoff question. A good question cannot be answered from public documents."
     },
     {
      "d": false,
-     "t": "Say which report section each one answers"
+     "t": "For each, say which report section and which model number it changes (volume, price, margin, WACC)."
+    },
+    {
+     "d": false,
+     "t": "Example: 'When steel prices rise after a project is signed, who bears the cost?'"
     }
    ],
    "title": "Bring 2 questions for Borusan's management"
@@ -625,11 +657,11 @@
    "steps": [
     {
      "d": false,
-     "t": "Read the Proven by winners part of the Map"
+     "t": "Read the Piraeus winning report (Cenergy, 2023-24): p.2 summary, p.6 forecast, p.9-10 risks, p.21 sensitivity."
     },
     {
      "d": false,
-     "t": "Write 5 takeaways in Notes"
+     "t": "Write 5 takeaways in Notes: what we copy, and what we do simpler."
     }
    ],
    "title": "Read the Winners' Playbook, share 5 takeaways"
@@ -646,11 +678,15 @@
    "steps": [
     {
      "d": false,
-     "t": "3 questions before each session"
+     "t": "Before each session: 3 questions linked to Borusan."
     },
     {
      "d": false,
-     "t": "Meeting note after each session"
+     "t": "During: write the 3 most useful facts, with the speaker's name."
+    },
+    {
+     "d": false,
+     "t": "After: a Meeting note in Notes within 24 hours."
     }
    ],
    "title": "Prep sessions (Nov 2-5): bring 3 questions to each"
@@ -667,15 +703,15 @@
    "steps": [
     {
      "d": false,
-     "t": "Read the Q3 2026 results (out Nov 6)"
+     "t": "Read the Q3 2026 results (out Nov 6) first. Drop questions they already answer."
     },
     {
      "d": false,
-     "t": "Shortlist questions in Notes"
+     "t": "Shortlist in Notes with the star, then vote together."
     },
     {
      "d": false,
-     "t": "Final 3, one for each speaker"
+     "t": "Final 3: CEO (strategy), CFO (numbers), IR (KPIs)."
     }
    ],
    "title": "Pick our top 3 kickoff questions (CEO, CFO, IR)"
@@ -689,7 +725,24 @@
    "role": "",
    "sprint": "",
    "status": "todo",
-   "steps": [],
+   "steps": [
+    {
+     "d": false,
+     "t": "Write it last, after the valuation."
+    },
+    {
+     "d": false,
+     "t": "Page 1: Buy, Hold or Sell, a 12-month target price, and the range."
+    },
+    {
+     "d": false,
+     "t": "Three reasons, each with one number and its source."
+    },
+    {
+     "d": false,
+     "t": "One line on the biggest risk."
+    }
+   ],
    "title": "Investment summary: rating, target price, 3 reasons (write last)"
   },
   "t15": {
@@ -704,15 +757,15 @@
    "steps": [
     {
      "d": false,
-     "t": "Prepare 3 minutes in English"
+     "t": "Prepare 3 minutes in English: story, one number, so what."
     },
     {
      "d": false,
-     "t": "Present on Zoom"
+     "t": "Present on Zoom without reading."
     },
     {
      "d": false,
-     "t": "Answer 2 questions from the team"
+     "t": "Answer 2 questions from the team; note what you could not answer."
     }
    ],
    "title": "3-minute teach-back of your own section"
@@ -729,11 +782,11 @@
    "steps": [
     {
      "d": false,
-     "t": "Rate each of the 7 report sections"
+     "t": "For each of the 7 report sections: know, half, or don't know."
     },
     {
      "d": false,
-     "t": "Pick 3 gaps to close this sprint"
+     "t": "Pick 3 gaps to close this sprint and name who leads each."
     }
    ],
    "title": "Gap check: know / half / don't know for each section"
@@ -750,11 +803,11 @@
    "steps": [
     {
      "d": false,
-     "t": "Everyone writes a meeting note on Nov 9"
+     "t": "On Nov 9 everyone writes a Meeting note: what management said, and when."
     },
     {
      "d": false,
-     "t": "Update the assumptions that changed"
+     "t": "Update the assumptions that changed, with the old and the new value."
     }
    ],
    "title": "Kickoff notes into our assumption book"
