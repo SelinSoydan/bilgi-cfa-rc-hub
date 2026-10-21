@@ -7,6 +7,7 @@ Locally the table lives in SQLite (data/hub.db). In the cloud the same table
 lives in Supabase (Postgres), reached through its REST API with `requests`,
 so no database driver is needed. The backend is picked from st.secrets.
 """
+import hashlib
 import json
 import os
 import sqlite3
@@ -157,12 +158,19 @@ def make_store(secrets):
     except Exception:
         sb = None
     store = SupabaseStore(sb["url"], sb["key"]) if sb else SQLiteStore(os.path.join(HERE, "data", "hub.db"))
-    if store.count() == 0:
-        seed_path = os.path.join(HERE, "seed.json")
-        if os.path.exists(seed_path):
-            with open(seed_path, encoding="utf-8") as f:
-                seed = json.load(f)
-            for col, docs in seed.items():
-                for doc_id, data in docs.items():
-                    store.put(col, doc_id, data)
+    seed_path = os.path.join(HERE, "seed.json")
+    if not os.path.exists(seed_path):
+        return store
+    with open(seed_path, "rb") as f:
+        raw = f.read()
+    digest = hashlib.md5(raw).hexdigest()
+    empty = store.count() == 0
+    # The local/demo SQLite copy follows seed.json whenever it changes.
+    # A real shared database (Supabase) is only seeded once, never overwritten.
+    stale = isinstance(store, SQLiteStore) and (store.all().get("meta", {}).get("_seed", {}) or {}).get("hash") != digest
+    if empty or stale:
+        for col, docs in json.loads(raw.decode("utf-8")).items():
+            for doc_id, data in docs.items():
+                store.put(col, doc_id, data)
+        store.put("meta", "_seed", {"hash": digest})
     return store

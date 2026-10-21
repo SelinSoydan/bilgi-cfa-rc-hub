@@ -4,6 +4,7 @@ The screen is the same page as the claude.ai hub (frontend/index.html, built by
 tools/build_frontend.py), so both look identical. Python keeps the data:
 it sends everything to the page and saves every change the page sends back.
 """
+import hashlib
 import os
 
 import streamlit as st
@@ -43,9 +44,17 @@ if pw and not st.session_state.get("ok"):
     st.stop()
 
 
+with open(os.path.join(HERE, "seed.json"), "rb") as _f:
+    SEED_HASH = hashlib.md5(_f.read()).hexdigest()
+
+
 @st.cache_resource
-def store():
+def _store(seed_hash):
     return make_store(st.secrets if _secret("supabase") else {})
+
+
+def store():
+    return _store(SEED_HASH)
 
 
 @st.cache_data(ttl=15, show_spinner=False)
